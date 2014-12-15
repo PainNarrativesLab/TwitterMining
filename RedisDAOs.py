@@ -4,6 +4,9 @@
 import redis
 
 class RedisDAO:
+	"""
+	Creates connection to redis host. Base class for redis services. Should not be directly called.
+	"""
 	def __init__(self, host='localhost', port=6379, db=0):
 		d = str(db)
 		#self.dbindex = 0
