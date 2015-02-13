@@ -3,7 +3,8 @@
 import TwitterSQLService
 
 from BeautifulSoup import BeautifulStoneSoup
-
+from ErrorClasses import *
+"""
 class TweetError(Exception):
     def __init__(self, tweetID):
         self.tweetID = tweetID
@@ -24,8 +25,9 @@ class UserServiceError(TweetError):
     def __init__(self, tweetID):
         self.kind = 'UserService'
         TweetError.__init__(self, tweetID)
+"""
 
-class TagHelpers:
+class TagHelpers(object):
     """
     This handles formatting hashtags as well as extracting them from the tweet
     """
@@ -71,7 +73,7 @@ class TagHelpers:
         return hashtags
 
 
-class TweetService:
+class TweetService(object):
     """
     Accesses the tweet mysql database to record tweet data
     
@@ -209,7 +211,7 @@ class HashtagService(TwitterSQLService.SQLService):
             #except Exception as e:
             #    print "Error in recording hashtags for tweetid %s. \n Tag: %s \n %s" % (tweetID, tag, e)    
 
-class UserService:
+class UserService(object):
     """
     Handles db interactions for tweet user
     

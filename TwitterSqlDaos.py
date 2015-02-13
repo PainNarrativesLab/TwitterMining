@@ -18,3 +18,5 @@ class TwitterSQLDAO(DAO.BaseDAO):
 		else:
 			self.connect(databaseName)
 
+if __name__ == '__main__':
+    pass

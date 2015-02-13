@@ -22,3 +22,6 @@ class QueryShell(DAO.TwitterSQLDAO):
 	    self.val = val
 	    self.returnAll()
 	    return list(self.results)
+
+if __name__ == '__main__':
+    pass

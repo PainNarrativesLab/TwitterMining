@@ -2,8 +2,19 @@
 This contains classes which act as observers of the searcher and then handle saving tweets to the various databases
 """
 from collections import deque
+from ErrorClasses import *
 
 class SearchObserver:
+    """
+    Acts as observer
+    
+    Attributes:
+        _db_objects: List of db connection objects (should implement IDB_Saver)
+        basekey:
+        _tweet_queue: Deque holding the tweets to be processed
+        _tweets_to_be_saved: Dictionary
+    """
+    
     def __init__(self):
         self._db_objects = []
         """ The key to start with in the pool """
@@ -18,13 +29,16 @@ class SearchObserver:
         """
         When the search is updated it notifies this class by passing itself in here.
         This method controls what is done with it
+        
+        Args:
+            subject: Object with a tweets property 
         """
         tweets = subject.tweets 
         self._new_tweets(tweets)
     
     def _add_to_pending_tweets(self, tweets):
         """
-        Adds the incoming tweets to the pool (perhaps should use stack or something like that)
+        Adds the incoming tweets to the pool to be recorded (perhaps should use stack or something like that)
         """
         self._tweet_queue.append(tweets)
         maxkey = max(self.tweets_to_be_saved.keys())    
@@ -44,7 +58,7 @@ class SearchObserver:
     
     def save_tweets(self, tweets):
         """
-        This will call all of the database saver objects (mysql,redis, couch) in turn and hand them a tweet off of
+        This will call each of the database saver objects (mysql,redis, couch) in turn and hand them a tweet off of
         the queue. Each of those objects has a save method which returns 1 if successfully saved
         """
         numdbs = len(self._db_objects)
@@ -56,13 +70,19 @@ class SearchObserver:
     def subscribe_db_object(self, dbobject):
         """
         Adds DB_Saver implementing object to the list of subscribed object
+        
+        Args:
+            dbobject: Object implementing the IDB_Saver interface
         """
         self._db_objects.append(dbobject)
 
-class IDB_Saver:
+class IDB_Saver(object):
     """
-    Interface that the various db saver objects should implement. These objects will be held in
-    SearchObserver and then called when the tweets update
+    Interface that objects which handle saving tweets to various databases should implement.
+    These objects will be held in SearchObserver and then called when the tweets update
+    
+    Attributes:
+        success: Boolean of whether the tweet has been saved. Default false
     """
     def __init__(self):
         self.success = False
@@ -70,30 +90,41 @@ class IDB_Saver:
     
     def save(self, tweets):
         """
-        This takes a list of TwitterDataProcessors.Tweet objects
+        This saves the tweets
+        Args:
+            tweets: a list of TwitterDataProcessors.Tweet objects
         """
         self.success = False
 
     def success(self):
+        """
+        Returns True/1 if the tweet was successfully saved. Returns false otherwise
+        """
         return self.success
 
 class CouchSaver(IDB_Saver):
+    """
+    Saves the new tweets to couchdb
+    """
     
     def __init__(self):
         IDB_Saver.__init__(self)    
     
     def set_dao(self, CouchService):
         """
-        This should be a TwitterServiceClasses.CouchService object
-        @param CouchService
-        @type TwitterServiceClasses.CouchService
+        Sets the couch db access handler
+        
+        Args:
+            CouchService: This is a TwitterServiceClasses.CouchService object which handles the db access
         """
         self.dao = CouchService
     
     def save(self, tweets):
-        """ save in couchdb
-        @param tweets List of TwitterDataProcessors.Tweet objects
-        @type tweets list
+        """
+        Saves the tweets into couchdb
+        
+        Args:
+            tweets: List of TwitterDataProcessors.Tweet objects
         """
         try:
             self.success = False
@@ -101,8 +132,10 @@ class CouchSaver(IDB_Saver):
                 self.dao.db.save(tweet.raw_tweet)
             #Addd checks for success to set flag
             self.success = True
-        except Exception as e:
-            print "Error in TweetSaverService.CouchSaver %s" % e
+        except SaverError("TweetSaverService.CouchSaver", tweet):
+            
+            pass
+            #print "Error in TweetSaverService.CouchSaver %s" % e
     
     #def success(self):
     #    return self.success
@@ -113,6 +146,9 @@ class RedisSaver(IDB_Saver):
         self.success = False
     
     def set_dao(self, RedisService):
+        """
+        Load redis server connection handler
+        """
         self.dao = RedisService
     
     def _extract_ids(self, tweets):
@@ -124,7 +160,9 @@ class RedisSaver(IDB_Saver):
         return ids
     
     def save(self, tweets):
-        """ save in redis """
+        """
+        Saves tweets to redis
+        """
         try:
             self.success = False
             for tid in ids:

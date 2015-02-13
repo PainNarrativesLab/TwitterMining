@@ -1,4 +1,6 @@
-# The working tweet searcher
+"""
+The soon-to-be-working tweet searcher
+"""
 import sys
 import twitter
 import couchdb
@@ -12,6 +14,8 @@ from TwitterServiceClasses import RedisService
 
 from TwitterDataProcessors import Extractors
 
+from ErrorClasses import *
+
 import datetime
 from datetime import datetime
 from time import sleep
@@ -19,7 +23,11 @@ from time import sleep
 
 class Search:
     """
-    Does the searching
+    Does the searching. Uses an observer to store and process results
+    
+    Attributes:
+        MAX_PAGES:
+        _observers: A list of observer objects
     """
     def __init__(self):
         self.MAX_PAGES = 10
@@ -28,14 +36,23 @@ class Search:
     def attach_observer(self, observer):
         """
         This attaches an observer object which has an update method to be called when there are new tweets to be stored
+        
+        Args:
+            observer: TweetSaverService.SearchObserver instance to be registered
         """
         if not observer in self._observers:
             self._observers.append(observer)
     
     def detach_observer(self, observer):
+        """
+        Removes an attached observer object
+        
+        Args:
+            observer: TweetSaverService.SearchObserver instance to be removed from registration
+        """
         try:
             self._observers.remove(observer)
-        except ValueError:
+        except ObserverError:
             pass
 
     def notify_observers(self, modifier=None):
@@ -46,7 +63,8 @@ class Search:
 
     def set_twitter_connection(self, login):
         """
-        TwitterLogin.login
+        Args:
+            login: TwitterLogin.login
         """
         self.twitter_conn = login()
     
@@ -75,15 +93,13 @@ class Search:
     def run(self, list_of_search_terms, limit, recent=True, rest=800):
         """
         Performs the search. This version internalizes the timeout functions so that it only grabs the newest tweet once per search term list
-        @param list_of_search_terms The query to send to twitter
-        @type list_of_search_terms list
-        @param limit The number of times to run the search loop
-        @type limit int
-        @param recent 'True' search for tweets newer than most recent record; 'False' search for tweets older than oldest record
-        @type recent string
-        @param rest The time to rest in between searches
-        @type rest int
         @todo Revise so that the only checks the starting tweet id once per group of query terms
+        
+        Args:
+            list_of_search_terms: A list of the terms for the query to send to twitter
+            limit: Integer representing the maximum number of times to run the search loop
+            recent: Boolean True search for tweets newer than most recent record; False search for tweets older than oldest record
+            rest: Integer of the time to rest in between searches
         """
         #Query
         self.search_terms = list_of_search_terms
