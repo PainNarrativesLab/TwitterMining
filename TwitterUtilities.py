@@ -3,15 +3,17 @@
 
 import sys
 import locale
-import twitter
-import redis
 import json
 import time
 from random import shuffle
 from urllib2 import URLError
-#from twitter__login import login
 
-def makeTwitterRequest(t, twitterFunction, max_errors=3, *args, **kwArgs): 
+import twitter
+
+
+# from twitter__login import login
+
+def makeTwitterRequest(t, twitterFunction, max_errors=3, *args, **kwArgs):
     wait_period = 2
     error_count = 0
     while True:
@@ -29,15 +31,16 @@ def makeTwitterRequest(t, twitterFunction, max_errors=3, *args, **kwArgs):
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
                 raise
 
+
 def _getRemainingHits(t):
     return t.account.rate_limit_status()['remaining_hits']
+
 
 # Handle the common HTTPErrors. Return an updated value for wait_period
 # if the problem is a 503 error. Block until the rate limit is reset if
 # a rate limiting issue
 def handleTwitterHTTPError(e, t, wait_period=2):
-
-    if wait_period > 3600: # Seconds
+    if wait_period > 3600:  # Seconds
         print >> sys.stderr, 'Too many retries. Quitting.'
         raise e
 
@@ -46,7 +49,7 @@ def handleTwitterHTTPError(e, t, wait_period=2):
         return None
     elif e.e.code in (502, 503):
         print >> sys.stderr, 'Encountered %i Error. Will retry in %i seconds' % (e.e.code,
-                wait_period)
+                                                                                 wait_period)
         time.sleep(wait_period)
         wait_period *= 1.5
         return wait_period
@@ -54,7 +57,7 @@ def handleTwitterHTTPError(e, t, wait_period=2):
         status = t.account.rate_limit_status()
         now = time.time()  # UTC
         when_rate_limit_resets = status['reset_time_in_seconds']  # UTC
-        sleep_time = max(when_rate_limit_resets - now, 5) # Prevent negative numbers
+        sleep_time = max(when_rate_limit_resets - now, 5)  # Prevent negative numbers
         print >> sys.stderr, 'Rate limit reached: sleeping for %i secs' % (sleep_time, )
         time.sleep(sleep_time)
         return 2
@@ -66,14 +69,13 @@ def handleTwitterHTTPError(e, t, wait_period=2):
 # the function passed into it via func.
 
 def _getFriendsOrFollowersUsingFunc(
-    func,
-    key_name,
-    t, # Twitter connection
-    r, # Redis connection
-    screen_name=None,
-    limit=10000,
-    ):
-
+        func,
+        key_name,
+        t,  # Twitter connection
+        r,  # Redis connection
+        screen_name=None,
+        limit=10000,
+):
     cursor = -1
 
     result = []
@@ -91,15 +93,15 @@ def _getFriendsOrFollowersUsingFunc(
 
     return result
 
-def getUserInfo(
-    t, # Twitter connection
-    r, # Redis connection
-    screen_names=[],
-    user_ids=[],
-    verbose=False,
-    sample=1.0,
-    ):
 
+def getUserInfo(
+        t,  # Twitter connection
+        r,  # Redis connection
+        screen_names=[],
+        user_ids=[],
+        verbose=False,
+        sample=1.0,
+):
     # Sampling technique: randomize the lists and trim the length.
 
     if sample < 1.0:
@@ -112,19 +114,19 @@ def getUserInfo(
         screen_names_str = ','.join(screen_names[:100])
         screen_names = screen_names[100:]
 
-        response = makeTwitterRequest(t, 
+        response = makeTwitterRequest(t,
                                       t.users.lookup,
                                       screen_name=screen_names_str)
-        
+
         if response is None:
             break
-                                    
+
         if type(response) is dict:  # Handle api quirk
             response = [response]
         for user_info in response:
             r.set(getRedisIdByScreenName(user_info['screen_name'], 'info.json'),
                   json.dumps(user_info))
-            r.set(getRedisIdByUserId(user_info['id'], 'info.json'), 
+            r.set(getRedisIdByUserId(user_info['id'], 'info.json'),
                   json.dumps(user_info))
         info.extend(response)
 
@@ -132,22 +134,21 @@ def getUserInfo(
         user_ids_str = ','.join([str(_id) for _id in user_ids[:100]])
         user_ids = user_ids[100:]
 
-        response = makeTwitterRequest(t, 
+        response = makeTwitterRequest(t,
                                       t.users.lookup,
                                       user_id=user_ids_str)
-        
+
         if response is None:
             break
-                                    
+
         if type(response) is dict:  # Handle api quirk
             response = [response]
         for user_info in response:
             r.set(getRedisIdByScreenName(user_info['screen_name'], 'info.json'),
                   json.dumps(user_info))
-            r.set(getRedisIdByUserId(user_info['id'], 'info.json'), 
+            r.set(getRedisIdByUserId(user_info['id'], 'info.json'),
                   json.dumps(user_info))
         info.extend(response)
-
 
     return info
 
@@ -166,10 +167,11 @@ def getRedisIdByScreenName(screen_name, key_name):
 def getRedisIdByUserId(user_id, key_name):
     return 'user_id$' + str(user_id) + '$' + key_name
 
-# For calculating the max_id parameter from statuses, which is 
+
+# For calculating the max_id parameter from statuses, which is
 # necessary in order to traverse a timeline in the v1.1 API. 
 # See https://dev.twitter.com/docs/working-with-timelines
 
-def getNextQueryMaxIdParam(statuses): 
-    return min([ status['id'] for status in statuses ]) - 1
+def getNextQueryMaxIdParam(statuses):
+    return min([status['id'] for status in statuses]) - 1
 

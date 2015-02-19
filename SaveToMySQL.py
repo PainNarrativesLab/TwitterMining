@@ -1,168 +1,122 @@
-#TODO: Better error handling. 
-#TODO: Maybe get all ids then transfer one by one
-import TwitterSQLService
+"""
+These are service classes for saving the various components of tweets to a mysql database
 
-from BeautifulSoup import BeautifulStoneSoup
+Depends:
+    While doesn't explicitly import, these classes load and call the following:
+        TwitterSQLService.SQLService
+        TwitterDataProcessors.TagHelpers
+        TwitterDataProcessors.Formatter
+
+TODO: Better error handling.
+TODO: Maybe get all ids then transfer one by one
+"""
+
 from ErrorClasses import *
-"""
-class TweetError(Exception):
-    def __init__(self, tweetID):
-        self.tweetID = tweetID
-    def __repr__(self):
-        return "%s went bad on tweetID %s" % (self.kind, self.tweetID)
-
-class TweetServiceError(TweetError):
-    def __init__(self, tweetID):
-        self.kind = 'TweetService'
-        TweetError.__init__(self, tweetID)
-        
-class HashtagServiceError(TweetError):
-    def __init__(self, tweetID):
-        self.kind = 'HashtagService'
-        TweetError.__init__(self, tweetID)
-
-class UserServiceError(TweetError):
-    def __init__(self, tweetID):
-        self.kind = 'UserService'
-        TweetError.__init__(self, tweetID)
-"""
 
 
-class TagHelpers(object):
+class TwitterMySqlServiceParent(object):
     """
-    This handles formatting hashtags as well as extracting them from the tweet
-    """
-    
-    def HTMLEntitiesToUnicode(self, text):
-        """
-        Converts HTML entities to unicode.  For example '&amp;' becomes '&'.
-        
-        Args:
-            text: The string to be converted to unicode
-        """
-        text = unicode(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-        return text
-    
-    def format(self, tagText):
-        """
-        Make the appropriate transformations to the hashtag
-        """
-        try:
-            tag = self.HTMLEntitiesToUnicode(tagText)
-            tag = str(tag)
-            tag = tag.lower()
-            return tag
-        except:
-            raise HashtagServiceError(tagText)
-        #finally:
-            #return tagText
-            #print "Tag formatting failed for tag text: %s \n %s" % (tagText, e)
-    
-    def getHashtags(self, record):
-        """
-        Extracts hashtags from the record
-        
-        Args:
-            record: Dictionary with key 'entities' which holds a dictionary with the key 'hashtags'
-        
-        Returns:
-            hashtags: List of hashtags present in the record
-        """
-        hashtags = []
-        for r in record['entities']['hashtags']:
-            hashtags.append(r['text'])
-        return hashtags
+    Common parent for all classes which save twitter objects to mysql database
 
-
-class TweetService(object):
-    """
-    Accesses the tweet mysql database to record tweet data
-    
     Attributes:
         dao: TwitterSQLService.SQLService object which handles db interactions
-        helper: Tag helper object 
+        helper: TwitterDataProcessors.TagHelpers or TwitterDataProcessors.Formatter
     """
-         
+
     def set_dao(self, dao):
         """
         Loads the object which handles db interaction
-        
+
         Args:
             dao: TwitterSQLService.SQLService object
         """
         self.dao = dao
-        
-    def set_taghelper(self, helper):
+
+    def set_helper(self, helper):
+        """
+        Load in an instance of TwitterDataProcessors.Formatter or one of its children for formatting etc
+
+        Args:
+            helper: TwitterDataProcessors.Formatter or child
+        """
         self.helper = helper
-        
+
+
+class TweetService(TwitterMySqlServiceParent):
+    """
+    Accesses the tweet mysql database to record tweet data.
+    Upon initialization, must do:
+        set_dao()
+        set_helper()
+    before ready to run.
+    
+    Attributes:
+        dao: TwitterSQLService.SQLService object which handles db interactions
+        helper: TwitterDataProcessors.TagHelpers or TwitterDataProcessors.Formatter
+    """
+    def __init__(self):
+        TwitterMySqlServiceParent.__init__(self)
+
     def recordTweetData(self, tweetID, tweet):
         """
         Records a tweet to the mysql db
         
         Args:
             tweetID: String tweetid ID of the tweet from the id_str field
-            tweet: String text of the tweet
+            tweet: tweet dictionary
         
         Raises:
             TweetServiceError: Raised when there is an error processing the tweet text or inserting into the db
+        TODO: Make sure user id is recorded before attempting
+        TODO: Rewrite to take a TwitterServiceClasses.Tweet object as input
         """
-        ##Make sure user id is recorded
         try:
-            #text = tweet['text']
             text = self.helper.HTMLEntitiesToUnicode(tweet['text'])
-#            text = self.HTMLEntitiesToUnicode(tweet['text'])
-            self.dao.query = """INSERT INTO tweets (tweetID, tweetText, favorite_count, source, retweeted, in_reply_to_screen_name, retweet_count, favorited, userID, lang, created_at)
+            #            text = self.HTMLEntitiesToUnicode(tweet['text'])
+            self.dao.query = """INSERT INTO tweets (tweetID, tweetText, favorite_count, source, retweeted,
+            in_reply_to_screen_name, retweet_count, favorited, userID, lang, created_at)
              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-            self.dao.val = [tweetID, text, 
-                      tweet['favorite_count'], tweet['source'], 
-                      tweet['retweeted'], tweet['in_reply_to_screen_name'], 
-                      tweet['retweet_count'], tweet['favorited'], 
-                      tweet['user']['id'], tweet['lang'], tweet['created_at']]
+            self.dao.val = [tweetID, text,
+                            tweet['favorite_count'], tweet['source'],
+                            tweet['retweeted'], tweet['in_reply_to_screen_name'],
+                            tweet['retweet_count'], tweet['favorited'],
+                            tweet['user']['id'], tweet['lang'], tweet['created_at']]
             self.dao.executeQuery()
         except:
             raise TweetServiceError(tweetID)
-            #print "Error in recording tweet %s. \n %s" % (tweetID, e)
 
 
-class HashtagService(TwitterSQLService.SQLService):
+class HashtagService(TwitterMySqlServiceParent):
     """
-    Handles db interactions for hashtags
+    Handles getting and recording hashtags to mysql database
+    Upon initialization, must do:
+        set_dao()
+        set_taghelper()
+    before ready to run.
+
+    Attributes:
+        dao: TwitterSQLService.SQLService object which handles db interactions
+        helper: TwitterDataProcessors.TagHelpers object
     """
-    def __init__(self, test=False, local=True):
-        TwitterSQLService.SQLService.__init__(self, test, local)
-    
-    def set_dao(self, dao):
-        """
-        Load db interaction handler
-        
-        Args:
-            dao: TwitterSQLService.SQLService object which handles db interactions.
-        """
-        self.dao = dao
-    
-    def set_taghelper(self, taghelper):
-        """
-        Load tag helper.
-        
-        Args:
-            taghelper: Object which processes tags 
-        """
-        self.taghelper = taghelper
- 
+
+    def __init__(self):
+        TwitterMySqlServiceParent.__init__(self)
+
     def getTagID(self, tagText):
         """
         Retrieves the unique identifier for a given hashtag
         
         Args:
             tagText: String text of the hashtag to get
+
         Returns:
             Returns a dictionary with key tagID containing the id string of the hashtag
         """
-        tag = self.taghelper.format(tagText)
+        tag = self.helper.format(tagText)
         self.dao.query = """SELECT tagID FROM hashtags WHERE hashtag = %s"""
-        self.dao.val = [tagText]
+        self.dao.val = [tag]
         self.dao.returnOne()
-        return self.results
+        return self.dao.results
 
     def _recordTagText(self, tagText):
         """
@@ -171,11 +125,11 @@ class HashtagService(TwitterSQLService.SQLService):
         Args:
             tagText: String of the hashtag to be recorded
         """
-        tag = self.taghelper.format(tagText)
+        tag = self.helper.format(tagText)
         self.dao.query = """INSERT INTO hashtags (hashtag) VALUES (%s)"""
         self.dao.val = [tag]
         self.dao.executeQuery()
-    
+
     def _recordTagAssoc(self, tweetID, tagID):
         """
         Associates a tag with a tweet in the db.
@@ -187,9 +141,11 @@ class HashtagService(TwitterSQLService.SQLService):
         self.dao.query = """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)"""
         self.dao.val = [tweetID, tagID]
         self.dao.executeQuery()
-        
+
     def recordHashtags(self, tweetID, tags):
         """
+        Records hashtags to database
+
         Args:
             tweetid: Integer ID of the tweet from id_str
             tags: List of tag strings
@@ -199,53 +155,50 @@ class HashtagService(TwitterSQLService.SQLService):
         """
         for tag in tags:
             try:
-                #Lookup tag id
+                # Lookup tag id
                 tagID = self.getTagID(tag)
-                if tagID == None:
-                    #Insert the tag text into hashtags table
-                    self.recordTagText(tag)
+                if tagID is None:
+                    # Insert the tag text into hashtags table
+                    self._recordTagText(tag)
                     tagID = self.getTagID(tag)
-                if tagID != None: #Now have id. Make association
-                   self.recordTagAssoc(tweetID, tagID['tagID']) 
+                if tagID is not None:  # Now have id. Make association
+                    self._recordTagAssoc(tweetID, tagID['tagID'])
             except:
                 raise HashtagServiceError(tweetID)
-            #except Exception as e:
-            #    print "Error in recording hashtags for tweetid %s. \n Tag: %s \n %s" % (tweetID, tag, e)    
 
-class UserService(object):
+
+class UserService(TwitterMySqlServiceParent):
     """
     Handles db interactions for tweet user
+    Needs to run set_dao() before ready to go
     
     Attributes:
+        dao: TwitterSQLService.SQLService object which handles db interactions
+        helper: TwitterDataProcessors.TagHelpers or TwitterDataProcessors.Formatter
         ignorecolumns: List of columns from tweet that will not be recorded in mysql db
     """
+
     def __init__(self):
-        #TwitterSQLService.SQLService.__init__(self, test, local)
+        TwitterMySqlServiceParent.__init__(self)
         self.ignorecolumns = ['id', 'entities',
-        'follow_request_sent',
-        'profile_use_background_image',
-        'profile_text_color',
-        'profile_image_url_https',
-        'profile_sidebar_fill_color',
-        'is_translator',
-        'geo_enabled',
-        'protected',
-        'default_profile_image','profile_link_color', 'profile_image_url','notifications',
-        'profile_background_image_url_https', 'profile_background_color','profile_banner_url',
-        'profile_background_image_url', 'profile_background_tile','contributors_enabled',
-        'profile_sidebar_border_color','default_profile', 'following','listed_count',
-        'follow_request_sent']
-    
-    def set_dao(self, dao):
-        """
-        @param dao TwitterSQLService.SQLService
-        """
-        self.dao = dao
+                              'follow_request_sent',
+                              'profile_use_background_image',
+                              'profile_text_color',
+                              'profile_image_url_https',
+                              'profile_sidebar_fill_color',
+                              'is_translator',
+                              'geo_enabled',
+                              'protected',
+                              'default_profile_image', 'profile_link_color', 'profile_image_url', 'notifications',
+                              'profile_background_image_url_https', 'profile_background_color', 'profile_banner_url',
+                              'profile_background_image_url', 'profile_background_tile', 'contributors_enabled',
+                              'profile_sidebar_border_color', 'default_profile', 'following', 'listed_count',
+                              'follow_request_sent']
 
     def _filter_userDict(self, userDict):
-        touse = [x for x in userDict.keys() if x not in self.ignorecolumns]
-        return touse
-    
+        to_use = [x for x in userDict.keys() if x not in self.ignorecolumns]
+        return to_use
+
     def check_user(self, userID):
         """
         Used to check whether user already exists
@@ -263,7 +216,7 @@ class UserService(object):
             return True
         else:
             return False
-    
+
     def _add_user_to_user_table(self, userID):
         """
         Inserts userID into table prior to updating the various fields
@@ -274,7 +227,7 @@ class UserService(object):
         self.dao.query = """INSERT INTO users (userID) VALUES (%s)"""
         self.dao.val = [userID]
         self.dao.executeQuery()
-    
+
     def _update_user_table_fields(self, userID, fields_to_update, userDict):
         """
         Once the user is in the users table, fill the various fields with properties of the user
@@ -287,9 +240,8 @@ class UserService(object):
         for k in fields_to_update:
             self.dao.query = """UPDATE users SET %s = %%s WHERE userID = %%s""" % k
             self.dao.val = [userDict[k], userID]
-            self.dao.executeQuery() 
-        
-    
+            self.dao.executeQuery()
+
     def createUser(self, userDict):
         """
         Creates a new user record. Only necessarily does useriD
@@ -300,14 +252,14 @@ class UserService(object):
         Raises:
             UserServiceError
         """
-        #Insert the userID
+        # Insert the userID
         self._add_user_to_user_table(userDict['id'])
-        #Make sure inserted
-        if self.check_user(userDict['id']) == True:
-            #Filter the fields to insert
+        # Make sure inserted
+        if self.check_user(userDict['id']) is True:
+            # Filter the fields to insert
             self.fields_to_update = self._filter_userDict(userDict)
             self._update_user_table_fields(userDict['id'], self.fields_to_update, userDict)
-        else: 
+        else:
             raise UserServiceError(userDict['id'])
 
     def recordUser(self, userDict):
@@ -321,11 +273,11 @@ class UserService(object):
         Raises:
             UserServiceError
         """
-        if self.check_user(userDict['id']) == True:
+        if self.check_user(userDict['id']):
             return True
         else:
             self.createUser(userDict)
-            if self.check_user(userDict['id']) == True:
+            if self.check_user(userDict['id']):
                 return True
             else:
                 raise UserServiceError(userDict['id'])

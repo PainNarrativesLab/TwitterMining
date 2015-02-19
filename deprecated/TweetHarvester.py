@@ -2,9 +2,11 @@
 
 import sys
 import time
+
 import twitter
 import couchdb
 from couchdb.design import ViewDefinition
+
 from TwitterLogin import login
 from twitter__util import makeTwitterRequest
 from twitter__util import getNextQueryMaxIdParam
@@ -37,11 +39,11 @@ MAX_PAGES = int(sys.argv[2])
 USER = None
 
 KW = {  # For the Twitter API call
-    'count': 200,
-    'trim_user': 'true',
-    'include_rts' : 'true',
-    'since_id' : 1,
-    }
+        'count': 200,
+        'trim_user': 'true',
+        'include_rts': 'true',
+        'since_id': 1,
+}
 
 if TIMELINE_NAME == 'user':
     USER = sys.argv[3]

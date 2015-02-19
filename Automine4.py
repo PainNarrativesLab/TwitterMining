@@ -1,44 +1,33 @@
 """
 Not yet ready
 """
-import sys
-import twitter
-import couchdb
-from couchdb.design import ViewDefinition
-
-from TwitterUtilities import makeTwitterRequest
-from TwitterLogin import login
-
-from TwitterServiceClasses import CouchService
-from TwitterServiceClasses import RedisService
-import TwitterSQLService
 
 from Loggers import SearchLogger
 
 from SaveToMySQL import *
-from TwitterDataProcessors import *
+from TweetDataProcessors import *
 from TwitterSearcher3 import *
-from TweetSaverService import *
+from ObserverAndSubscribers import *
 
 DB_NAME = 'compiled'
 limit = 10000
 LOGFILE = '/Users/ars62917/Desktop/twitter_miner_log.txt'
-#LOGFILE = '/Users/adam/Desktop/twitter_miner_log.txt'
-REST = 800 #Interval to rest between runs
+# LOGFILE = '/Users/adam/Desktop/twitter_miner_log.txt'
+REST = 800  #Interval to rest between runs
 
 search_terms = ['Spoonie',
-        'CRPS',
-        'Migraine',
-        'RSD',
-        'Fibro',
-        'Fibromyalgia',
-        'Vulvodynia',
-        'ChronicPain',
-        'pain',
-        'endometriosis',
-        'neuropathy',
-        'arthritis',
-        'neuralgia']
+                'CRPS',
+                'Migraine',
+                'RSD',
+                'Fibro',
+                'Fibromyalgia',
+                'Vulvodynia',
+                'ChronicPain',
+                'pain',
+                'endometriosis',
+                'neuropathy',
+                'arthritis',
+                'neuralgia']
 
 #a
 #Utility classes
@@ -96,6 +85,7 @@ def getNewerTweets():
     recent = True
     Searcher.set_twitter_connection(login)
     Searcher.run(search_terms, limit, recent, REST)
+
 
 def getOlderTweets():
     """

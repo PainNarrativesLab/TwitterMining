@@ -1,24 +1,10 @@
 """
 The soon-to-be-working tweet searcher
 """
-import sys
-import twitter
-import couchdb
-from couchdb.design import ViewDefinition
 
-from TwitterUtilities import makeTwitterRequest
-from TwitterLogin import login
-
-from TwitterServiceClasses import CouchService
-from TwitterServiceClasses import RedisService
-
-from TwitterDataProcessors import Extractors
+from time import sleep
 
 from ErrorClasses import *
-
-import datetime
-from datetime import datetime
-from time import sleep
 
 
 class Search:
@@ -29,10 +15,11 @@ class Search:
         MAX_PAGES:
         _observers: A list of observer objects
     """
+
     def __init__(self):
         self.MAX_PAGES = 10
         self._observers = []
-    
+
     def attach_observer(self, observer):
         """
         This attaches an observer object which has an update method to be called when there are new tweets to be stored
@@ -42,7 +29,7 @@ class Search:
         """
         if not observer in self._observers:
             self._observers.append(observer)
-    
+
     def detach_observer(self, observer):
         """
         Removes an attached observer object
@@ -67,10 +54,10 @@ class Search:
             login: TwitterLogin.login
         """
         self.twitter_conn = login()
-    
+
     def set_redis_service(self, RedisService):
         self.redis = RedisService
-    
+
     def set_couch_service(self, CouchService):
         """
         self.DB_NAME = 'compiled'
@@ -82,13 +69,13 @@ class Search:
         CouchService.__init__(self, self.DB_NAME)
         """
         self.couch = CouchService
-    
+
     def set_logger(self, Logger):
         """
         Instance of Loggers.SearchLogger
         """
         self.logger = Logger
-        
+
 
     def run(self, list_of_search_terms, limit, recent=True, rest=800):
         """
@@ -101,7 +88,7 @@ class Search:
             recent: Boolean True search for tweets newer than most recent record; False search for tweets older than oldest record
             rest: Integer of the time to rest in between searches
         """
-        #Query
+        # Query
         self.search_terms = list_of_search_terms
         self.recent = recent
         self.tweets = []
@@ -133,17 +120,17 @@ class Search:
                 sleep(rest)
             idx += 1
             run_number += 1
-    
+
     def _get_oldest_tweet(self):
         """
         Handles interface with service class so don't have to change other things if use redis or mysql
         """
-        return self.redis.get_oldest_id() #@todo Replace with redis search
-    
+        return self.redis.get_oldest_id()  # @todo Replace with redis search
+
     def _get_newest_tweet(self):
         self.redis.get_max_id()
         return self.redis.maxid
-    
+
     def _get_starting_tweet(self, recent):
         """
         Get tweetid to start from or to stop at. This is done here so that will only happen once per loop through search terms
@@ -164,18 +151,20 @@ class Search:
         @type recent Boolean
         @returns list List of dictionaries from searches
         """
-        try:            
+        try:
             search_results = []
             ##Iterate the search for the current hashtag up to the maximum number of pages
-            for _ in range(self.MAX_PAGES-1):  # Get more pages
-                if recent == False: #search for older tweets
-                    result = self.twitter_conn.search.tweets(q=hashtag, count=100, max_id=self.limitTweet) #tweets before ealiest record
+            for _ in range(self.MAX_PAGES - 1):  # Get more pages
+                if recent == False:  # search for older tweets
+                    result = self.twitter_conn.search.tweets(q=hashtag, count=100,
+                                                             max_id=self.limitTweet)  #tweets before ealiest record
                     search_results.append(result)
-                elif recent == True: #search for newer tweets
-                    result = self.twitter_conn.search.tweets(q=hashtag, count=100, since_id=self.limitTweet) #get most recent tweets
+                elif recent == True:  # search for newer tweets
+                    result = self.twitter_conn.search.tweets(q=hashtag, count=100,
+                                                             since_id=self.limitTweet)  #get most recent tweets
                     search_results.append(result)
         except Exception as e:
-            #pass
+            # pass
             #TODO Add exception handling
             print 'Error in twitter searching: %s' % e
         finally:
@@ -188,7 +177,7 @@ class Search:
         tweetid = tweet['id_str']
         tweet['_id'] = tweetid
         return tweet
-    
+
     def _process_search_results(self, search_results):
         """
         Handle tweet formatting of search results and put tweets into list
@@ -204,10 +193,9 @@ class Search:
                 tweets.append(tweet)
         except Exception as e:
             print 'Error with _process_search_results'
-            #add handling
+            # add handling
         finally:
             return tweets
-     
 
 
 """
