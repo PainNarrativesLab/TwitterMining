@@ -8,6 +8,8 @@ __author__ = 'ars62917'
 class CouchService(object):
     """
     Handles operations upon the couchdb dataabase specific to tweet stuff
+
+
     """
     def __init__(self):
         self.min_id_view = None
