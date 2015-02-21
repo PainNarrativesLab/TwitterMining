@@ -1,13 +1,24 @@
-from  datetime import datetime
+from datetime import datetime
+from logbook import Logger
 
 
-class LogWriter:
+class LogWriter(object):
     """
     Parent class for loggers which write to a textfile
     """
 
     def __init__(self):
-        pass
+        self.log_file = "application_search.log"
+        self.initialize_logger()
+
+    def initialize_logger(self):
+        try:
+            if self.logger is not None:
+                pass
+        except:
+            self.logger = Logger()
+            # self.logger = FileHandler(self.log_file)
+            # self.logger.push_application() #Pushes handler onto stack of log handlers
 
     def set_log_file(self, file_to_write):
         self.logfile = file_to_write
@@ -33,7 +44,7 @@ class SearchLogger(LogWriter):
         print self.log
 
     def limit_tweet(self, limitTweet, recent):
-        if (recent is True):
+        if recent is True:
             self.log += "Getting newer tweets \n"
         else:
             self.log += "Getting older tweets \n"

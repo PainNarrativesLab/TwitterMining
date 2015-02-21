@@ -12,7 +12,32 @@ from collections import deque
 from ErrorClasses import *
 
 
-class SearchObserver:
+class ISearchObserver(object):
+    """
+    Interface for Observer for twitter searches with objects that handles database saving subscribed. When a search retreives
+    new tweets, it calls update(). The observer then calls each subscribed database service object in turn to save
+    """
+
+    def update(self, subject):
+        raise NotImplementedError
+
+    def subscribe_db_saver(self, dbobject):
+        raise NotImplementedError
+
+    def save_pending_tweets(self):
+        raise NotImplementedError
+
+    def _add_to_pending_tweets(self, tweets):
+        raise NotImplementedError
+
+    def _get_next_pending_tweet(self):
+        raise NotImplementedError
+
+    def _save_tweet(self, tweet):
+        raise NotImplementedError
+
+
+class SearchObserver(ISearchObserver):
     """
     Observer for twitter searches with objects that handles database saving subscribed. When a search retreives
     new tweets, it calls update(). The observer then calls each subscribed database service object in turn to save
@@ -25,6 +50,7 @@ class SearchObserver:
     """
 
     def __init__(self):
+        ISearchObserver.__init__(self)
         self._db_objects = []
         self._attempts = 0
         self._successes = 0
@@ -274,3 +300,7 @@ class MySqlSaver(IDB_Saver):
                 self.success = False
                 # print "Error in TweetSaverService.MySqlSaver %s" % e
         return self.success
+
+
+if __name__ == '__main__':
+    pass

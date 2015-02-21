@@ -14,6 +14,17 @@ import twitter
 # from twitter__login import login
 
 def makeTwitterRequest(t, twitterFunction, max_errors=3, *args, **kwArgs):
+    """
+    Handles making twitter request
+
+    Arguments:
+        t: twitter_login connection
+        :param twitterFunction:
+        :param max_errors:
+        :param args:
+        :param kwArgs:
+    :return:
+    """
     wait_period = 2
     error_count = 0
     while True:

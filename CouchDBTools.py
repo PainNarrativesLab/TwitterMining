@@ -166,3 +166,7 @@ class CompileTweets:
 #             #print 'jap'
 #         except:
 #             print e
+
+
+if __name__ == '__main__':
+    pass

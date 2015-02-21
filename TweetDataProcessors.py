@@ -265,3 +265,7 @@ class Tags(object):
             return pairs
         else:
             return list_of_tags
+
+
+if __name__ == '__main__':
+    pass

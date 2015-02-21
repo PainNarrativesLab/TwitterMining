@@ -281,3 +281,7 @@ class UserService(TwitterMySqlServiceParent):
                 return True
             else:
                 raise UserServiceError(userDict['id'])
+
+
+if __name__ == '__main__':
+    pass

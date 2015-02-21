@@ -6,7 +6,7 @@ from Loggers import SearchLogger
 
 from SaveToMySQL import *
 from TweetDataProcessors import *
-from TwitterSearcher3 import *
+from TwitterSearchTools import *
 from ObserverAndSubscribers import *
 
 DB_NAME = 'compiled'

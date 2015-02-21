@@ -15,24 +15,40 @@ class LoggableError(Exception):
     """
 
     def __init__(self):
-        self.log_file = "application.log"
+        self.log_file = "application_errors.log"
         self.initialize_logger()
 
     def initialize_logger(self):
         try:
-            if self.logger != None:
+            if self.logger is not None:
                 pass
         except:
             self.logger = Logger()
             # self.logger = FileHandler(self.log_file)
             #self.logger.push_application() #Pushes handler onto stack of log handlers
 
-
     def log_error(self, error_message):
         self.logger.error(error_message)
 
     def log_warning(self, warning_message):
         self.logger.warn(warning_message)
+
+
+class SearchError(LoggableError):
+    """
+    Errors in twitter searches
+    """
+    def __init__(self, error, problem_method=''):
+        """
+        Initializes log handler and creates message. Calls log
+        Args:
+            error: The exception thrown
+            problem_method: String name of the method raising the error
+        """
+        LoggableError.__init__(self)
+        self.initialize_logger()
+        self.error_message = "Search error %s" % problem_method
+        self.logger.error(error)
 
 
 class TweetError(LoggableError):
@@ -110,7 +126,7 @@ class ObserverError(LoggableError):
     def __init__(self, observer):
         LoggableError.__init__(self)
         self.problem_observer = observer
-        self.error_message = "Error with observer: %s" % (self.problem_observer.__toString())
+        self.error_message = "Error with observer: %s" % (self.problem_observer.__repr__())
 
     def __repr__(self):
         return self.error_message

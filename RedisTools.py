@@ -179,3 +179,6 @@ class MaintainMasterTweetList(RedisDAO):
                 self.db.sadd(tid, tid)
         except Exception as e:
             print "error %s" % e
+
+if __name__ == '__main__':
+    pass
