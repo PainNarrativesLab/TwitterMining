@@ -166,12 +166,6 @@ class IDB_Saver(object):
         """
         raise NotImplementedError()
 
-    # def success(self):
-    #     """
-    #     Returns: True/1 if the tweet was successfully saved. Returns false otherwise
-    #     """
-    #     return self.success
-
 
 class CouchSaver(IDB_Saver):
     """
