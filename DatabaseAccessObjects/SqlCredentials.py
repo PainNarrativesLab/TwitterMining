@@ -4,6 +4,7 @@ Credentials for mysql database access
 """
 
 from sqlalchemy import create_engine
+import xml.etree.ElementTree as ET
 
 
 class Credentials(object):
@@ -19,11 +20,25 @@ class Credentials(object):
     """
 
     def __init__(self):
-        self.db_host = "mysqlent.csun.edu"
+        self.db_host = ""
         self.db_user = ''
         self.db_name = ''
         self.db_password = ''
-        self.db_port = '42424'
+        self.db_port = ''
+
+    def load_credentials(self, credentials_file):
+        """
+        Imports the database connection credentials from xml file
+
+        Args:
+         credentials_file: Path and filename to the credentials file to use
+        """
+        credentials = ET.parse(credentials_file)
+        self.db_host = credentials.find('db_host').text
+        self.db_port = credentials.find('db_port').text
+        self.db_user = credentials.find('db_user').text
+        self.db_name = credentials.find('db_name').text
+        self.db_password = credentials.find('db_password').text
 
     def host(self):
         """
@@ -53,20 +68,23 @@ class Credentials(object):
         """
         return self.db_user
 
-
     def port(self):
         """
         Returns:
             String identifying port to connect with
         """
-        return self.db_port
+        if self.db_port is not None:
+            return self.db_port
 
     def sql_alchemy_engine(self):
         """
         Creates a mysql alchemy engine for connecting to the db with the format:
          dialect+driver://username:password@host:port/database
         """
-        engine_string = "mysql://%s:%s@%s:%s/%s" % (self.db_user, self.db_password, self.db_host, self.db_port, self.db_name)
+        if self.db_port is not None:
+            engine_string = "mysql://%s:%s@%s:%s/%s" % (self.db_user, self.db_password, self.db_host, self.db_port, self.db_name)
+        else:
+            engine_string = "mysql://%s:%s@%s/%s" % (self.db_user, self.db_password, self.db_host, self.db_name)
         return create_engine(engine_string)
 
 

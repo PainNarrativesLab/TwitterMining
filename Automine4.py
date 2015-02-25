@@ -4,7 +4,10 @@ Not yet ready
 
 from Loggers import SearchLogger
 
-from SaveToMySQL import *
+from MySQLTools import *
+from CouchDBTools import *
+from RedisTools import *
+import TwitterSQLService
 from TweetDataProcessors import *
 from TwitterSearchTools import *
 from ObserverAndSubscribers import *
@@ -30,24 +33,24 @@ search_terms = ['Spoonie',
                 'neuralgia']
 
 #a
-#Utility classes
+# Utility classes
 Logger = SearchLogger()
 Logger.set_log_file(LOGFILE)
 TagHelpers = TagHelpers()
 
-#Initialize couchdb handler classes
+# Initialize couchdb handler classes
 CouchService = CouchService(DB_NAME)
 CouchSaver = CouchSaver()
 CouchSaver.set_dao(CouchService)
 
-#Initialize redis handler classes
+# Initialize redis handler classes
 RedisService = RedisService()
 RedisSaver = RedisSaver()
 RedisSaver.set_dao(RedisService)
 
-#Initialize mysql handler classes
-mysql_dao = TwitterSQLService.SQLService(test=False, local=True)
-#Initialize services for mysql
+# Initialize mysql handler classes
+mysql_dao = TwitterSQLService.SQLService()
+# Initialize services for mysql
 TweetService = TweetService()
 TweetService.set_taghelper(TagHelpers)
 TweetService.set_dao(mysql_dao)
@@ -62,15 +65,15 @@ UserService.set_dao(mysql_dao)
 MySqlSaver = MySqlSaver()
 MySqlSaver.set_services(HashtagService, TweetService, UserService)
 
-#Intialize observer and attach saver objects to it
+# Intialize observer and attach saver objects to it
 SaverService = SearchObserver()
 SaverService.subscribe_db_object(RedisSaver)
 SaverService.subscribe_db_object(CouchSaver)
 SaverService.subscribe_db_object(MySqlSaver)
 
-#add some sort of check to make sure everything is ready before starting search
+# add some sort of check to make sure everything is ready before starting search
 
-#Initialize classes which perform the searching
+# Initialize classes which perform the searching
 Searcher = Search()
 Searcher.set_couch_service(CouchService)
 Searcher.set_redis_service(RedisService)

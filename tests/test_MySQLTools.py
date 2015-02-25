@@ -8,7 +8,7 @@ from numpy.testing.decorators import setastest
 
 from DaoMocks import *
 from TwitterProjectTestEntities import *
-from SaveToMySQL import *
+from test_MySQLTools import *
 from DatabaseAccessObjects.SqlCredentials import TestingCredentials
 from TweetDataProcessors import *
 
