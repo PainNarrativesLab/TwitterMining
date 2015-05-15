@@ -1,0 +1,21 @@
+
+ Getting older tweets 
+ starting from tweet 1234567890
+ Getting newer tweets 
+ starting from tweet 1234567890
+    Retrieved 98 tweets for search on cattoy
+    Retrieved 98 tweets for search on cattoy
+ start resting: 2015-03-13 12:57:45.744338 
+ --------------------------------- 2015-03-13 12:57:45.744845 --------------------------- 
+ Run number: 45 
+ Searching for catfood 
+ Getting older tweets 
+ starting from tweet 1234567890
+ Getting newer tweets 
+ starting from tweet 1234567890
+    Retrieved 98 tweets for search on cattoy
+    Retrieved 98 tweets for search on cattoy
+ start resting: 2015-03-19 08:22:11.601426 
+ --------------------------------- 2015-03-19 08:22:11.601944 --------------------------- 
+ Run number: 45 
+ Searching for catfood 
