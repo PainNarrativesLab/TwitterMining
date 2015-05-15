@@ -67,6 +67,7 @@ class SearchObserver(ISearchObserver):
         tweets = subject.tweets
         if len(tweets) > 0:
             self._add_to_pending_tweets(tweets)
+        self.save_pending_tweets()
 
     def subscribe_db_saver(self, dbobject):
         """
@@ -134,6 +135,7 @@ class SearchObserver(ISearchObserver):
         TODO: Perhaps have this running on a separate thread so that the calls to update won't be held up by save tasks?
         """
         for db in self._db_objects:
+            # print "called %s /n" % db.name
             self._attempts += 1
             result = db.save(tweet)
             if result is True:
@@ -174,6 +176,7 @@ class CouchSaver(IDB_Saver):
 
     def __init__(self):
         IDB_Saver.__init__(self)
+        self.name = 'couchsaver'
 
     def set_dao(self, CouchService):
         """
@@ -184,10 +187,28 @@ class CouchSaver(IDB_Saver):
         """
         self.dao = CouchService
 
-    def save(self, tweets):
+    def save(self, tweet):
         """
-        Saves the tweets into couchdb
-        
+        Saves a tweet into couchdb
+
+        Args:
+            tweet: A TwitterDataProcessors.Tweet object
+
+        Returns:
+            Boolean of whether succeeded or failed
+        """
+        self.success = True
+        try:
+            self.dao.dao.save(tweet.raw_tweet)
+        except SaverError("TweetSaverService.CouchSaver", tweet):
+            self.success = False
+        return self.success
+
+    def save_list(self, tweets):
+        """
+        Saves a list of tweets into couchdb
+        Not currently used
+
         Args:
             tweets: List of TwitterDataProcessors.Tweet objects
 
@@ -197,7 +218,7 @@ class CouchSaver(IDB_Saver):
         self.success = True
         for tweet in tweets:
             try:
-                self.dao.db.save(tweet.raw_tweet)
+                self.dao.dao.save(tweet.raw_tweet)
             except SaverError("TweetSaverService.CouchSaver", tweet):
                 self.success = False
         return self.success
@@ -215,33 +236,55 @@ class RedisSaver(IDB_Saver):
     def __init__(self):
         IDB_Saver.__init__(self)
         self.success = False
+        self.name = 'redissaver'
 
-    def set_dao(self, RedisService):
+    def set_dao(self, redis_service):
         """
         Load redis server connection handler
 
         Args:
-            RedisService: RedisTools.RedisService object which will handle saving the tweets
+            redis_service: RedisTools.RedisService object which will handle saving the tweets
         """
-        self.dao = RedisService
+        self.dao = redis_service
 
-    def _extract_ids(self, tweets):
+    def save(self, tweet):
+        """
+        Saves a tweet to redis
+        Args:
+            tweet: tweet: A TwitterDataProcessors.Tweet object
+        """
+        self.success = True
+        tid = tweet.tweetID
+        if tid:
+            try:
+                self.dao.save_tweet_id(tid)
+            except SaverError("TweetSaverService.RedisSaver", tid):
+                self.success = False
+        return self.success
+
+    @staticmethod
+    def _extract_ids(tweets):
         """
         Get list of ids from tweets and return list
+        Args:
+            tweets: List of dictionary like objects with a key 'id_str'
         """
         ids = []
         [ids.append(x['id_str']) for x in tweets]
         return ids
 
-    def save(self, tweets):
+    def save_list(self, tweets):
         """
-        Saves tweets to redis
+        Saves tweets to redis.
+        Not actually used now
+        Args:
+            tweets: List of tweet dicts
         """
         self.success = True
         ids = self._extract_ids(tweets)
         for tid in ids:
             try:
-                self.dao.db.save_tweet_id(tid)
+                self.dao.save_tweet_id(tid)
             except SaverError("TweetSaverService.RedisSaver", tid):
                 self.success = False
         return self.success
@@ -261,10 +304,12 @@ class MySqlSaver(IDB_Saver):
     def __init__(self):
         IDB_Saver.__init__(self)
         self.success = False
+        self.name = 'mysqlsaver'
 
     def set_services(self, HashtagService, TweetService, UserService):
         """
-        Loads in the service classes used via the observer. Each should already be initialized with its database connection set.
+        Loads in the service classes used via the observer. Each should already be
+        initialized with its database connection set.
 
         Args:
             HashtagService: SaveToMySQL.HashtagService This will save the hashtags to the db
@@ -275,9 +320,29 @@ class MySqlSaver(IDB_Saver):
         self.tweet_service = TweetService
         self.user_service = UserService
 
-    def save(self, tweets):
+    def save(self, tweet):
         """
-        save in mysql list of Tweet entities
+        Saves a tweet to mysql
+        Args:
+            tweet: TweetDataProcessor.Tweet object
+
+        Returns:
+            False if at least one recording attempt fails. True otherwise
+        """
+        self.success = True
+        try:
+            self.user_service.recordUser(tweet.user)
+            self.tweet_service.recordTweetData(tweet.tweetID, tweet)
+            self.hashtag_service.recordHashtags(tweet.tweetID, tweet.hashtags)
+        except SaverError("TweetSaverService.MySQLSaver", tweet):
+            self.success = False
+            # print "Error in TweetSaverService.MySqlSaver %s" % e
+        return self.success
+
+    def save_list(self, tweets):
+        """
+        save in mysql list of Tweet entities.
+        Not currently used
         Args:
             tweets: List of tweets to record
 

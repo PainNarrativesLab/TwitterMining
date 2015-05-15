@@ -31,9 +31,11 @@ search_terms = ['Spoonie',
                 'arthritis',
                 'neuralgia']
 
+
 limit = 10000
 LOGFILE = '/Users/adam/Desktop/twitter_miner_log.txt'
 REST = 800  #Interval to rest between runs
+credentials = '/Users/adam/Dropbox/PainNarrativesLab/private_credentials/twittercredentials.xml'
 
 
 class LogWriter:
@@ -60,7 +62,7 @@ def getNewerTweets():
     Call this to get the most recent tweets for the search list
     """
     recent = 'True'
-    ts = TS.Search()
+    ts = TS.Search(credentials)
     ts.run(search_terms, limit, recent, REST)
 
 

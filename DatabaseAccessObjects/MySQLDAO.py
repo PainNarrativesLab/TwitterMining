@@ -20,13 +20,13 @@ class BaseDAO:
         local: DEPRECATED legacy string
     """
 
-    def __init__(self, credentials, test=False, local=False):
+    def __init__(self, test=False, local=False):
         """
         Args:
             test: No longer used; still here for legacy code
             local: No longer used; still here for legacy code
         """
-        self.credentials = credentials
+        # self.credentials = credentials
         self.test = test
         self.local = local
         self.mysqlError = MySQLdb.Error
@@ -45,11 +45,24 @@ class BaseDAO:
             credentials: SQL_Credentials.Credentials
         """
         try:
-            self.db = msq.connect(credentials.host(),
-                                  credentials.username(),
-                                  credentials.password(),
-                                  credentials.database(),
-                                  cursorclass=MySQLdb.cursors.DictCursor)
+            #dsn = credentials.host() + ':' + credentials.port()
+            if credentials.port() is not None:
+                self.db = msq.connect(host=credentials.host(), port=credentials.port(),
+                                      user=credentials.username(),
+                                      passwd=credentials.password(),
+                                      db=credentials.database(),
+                                      charset='utf8',
+                                      use_unicode=True,
+                                      cursorclass=MySQLdb.cursors.DictCursor)
+            else:
+                self.db = msq.connect(host=credentials.host(),
+                                      user=credentials.username(),
+                                      passwd=credentials.password(),
+                                      db=credentials.database(),
+                                      charset='utf8',
+                                      use_unicode=True,
+                                      cursorclass=MySQLdb.cursors.DictCursor)
+
             self.db.autocommit(True)
             self.dbc = self.db.cursor()
             self.status = 'Connected to: %s' % credentials.database()

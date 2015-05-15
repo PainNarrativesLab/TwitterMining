@@ -22,6 +22,7 @@ class Tweet(object):
 
     def __init__(self):
         self.tweetID = ''
+        self.userID = ''
         self.hashtags = []
         self.raw_tweet = ''
         self.tweet_text = ''
@@ -29,6 +30,9 @@ class Tweet(object):
 
     def set_tweetID(self, tweetID):
         self.tweetID = tweetID
+
+    def set_userID(self, userID):
+        self.userID = userID
 
     def set_hashtags(self, list_of_hashtags):
         self.hashtags += list_of_hashtags
@@ -56,12 +60,16 @@ class Formatter(object):
         """
         Converts HTML entities to unicode.  For example '&amp;' becomes '&'.
         Args:
-            text: HTML laded text to convert to unicode
+            text: HTML laden text to convert to unicode
         Returns:
             String converted to unicode
         """
-        text = unicode(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
-        return text
+        try:
+            text = unicode(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
+            return text
+        except Exception as e:
+            print "error formatting string: %s ; Errors:  %s" % text, e
+            return None
 
     def format(self, text):
         """
@@ -69,104 +77,11 @@ class Formatter(object):
         """
         try:
             txt = self.HTMLEntitiesToUnicode(text)
-            txt = str(txt)
+            # txt = str(txt)
             return txt
         except Exception as e:
-            print "error formatting %s" % e
-            # raise HashtagServiceError(text)
-
-
-class TweetFactory(Formatter):
-    """
-    This takes raw tweets and makes the expected tweet object
-    Needs to run set_extractors() before ready to go.
-
-    Attributes:
-        extractors: TwitterDataProcessors.Extractors
-    """
-    def __init__(self):
-        Formatter.__init__(self)
-
-    def set_extractors(self, extractors):
-        """
-        Loads in an object which handles extracting tweet entities
-
-        Args:
-            extractors: TwitterDataProcessors.Extractors
-        """
-        self.extractors = Extractors
-
-    def make_tweet(self, raw_tweet):
-        """
-        This is the main publically called method
-        """
-        self._set_raw(raw_tweet)
-        self._make_tweet()
-        self._process_hashtags()
-        self._process_user()
-        self._process_text()
-        return self.tweet
-
-    def _set_raw(self, tweet):
-        """
-        Sets the input to self.raw. Everything should operate off of self.raw
-        """
-        self.raw = tweet
-
-    def _make_tweet(self):
-        self.tweet = Tweet()
-        self.tweet.set_raw_tweet(self.raw)
-
-    def _process_hashtags(self):
-        # tags = self.extractors.extractHashtags(self.raw)
-        result = self.extractors.getEntities(self.raw)
-        tags = [self.format(r['text']) for r in result['hashtags']]
-        if len(tags) > 0:
-            self.tweet.set_hashtags(tags)
-
-    def _process_user(self):
-        self.tweet.set_user_info(self.raw['user'])
-
-    def _process_text(self):
-        self.tweet.set_text(self.raw['text'])
-
-
-class TagHelpers(Formatter):
-    """
-    This contains tools for working with hashtags.
-    It handles formatting hashtags as well as extracting them from the tweet
-    """
-    def __init__(self):
-        Formatter.__init__(self)
-
-    def format(self, tagText):
-        """
-        Make the appropriate transformations to the hashtag
-        """
-        try:
-            tag = self.HTMLEntitiesToUnicode(tagText)
-            tag = str(tag)
-            tag = tag.lower()
-            return tag
-        except:
-            raise HashtagServiceError(tagText)
-            # finally:
-            # return tagText
-            # print "Tag formatting failed for tag text: %s \n %s" % (tagText, e)
-
-    def getHashtags(self, record):
-        """Extracts hashtags from the record
-
-        Args:
-            record: Dictionary with key 'entities' which holds a dictionary with the key 'hashtags'
-
-        Returns:
-            hashtags: List of hashtags present in the record
-        """
-        hashtags = []
-        for r in record['entities']['hashtags']:
-            hashtags.append(r['text'])
-        return hashtags
+            print "error formatting string: %s ; Errors:  %s" % text, e
+            return None
 
 
 class Extractors(object):
@@ -174,6 +89,11 @@ class Extractors(object):
     These process the raw tweet for specific components
     Wrapper for twitter_text.Extractor
     """
+    def __init__(self):
+        pass
+
+    def get_entities(self, tweet):
+        return Extractors.getEntities(tweet)
 
     @staticmethod
     def getEntities(tweet):
@@ -218,6 +138,118 @@ class Extractors(object):
                 return all_tags_from_search
         except Exception as e:
             print 'Error in hashtag extraction %s' % e
+
+
+class TweetFactory(Formatter, Extractors):
+    """
+    This takes raw tweets and makes the expected tweet object
+    Needs to run set_extractors() before ready to go.
+
+    Attributes:
+        extractors: TwitterDataProcessors.Extractors
+    """
+    def __init__(self):
+        Formatter.__init__(self)
+        Extractors.__init__(self)
+
+    # def set_extractors(self, extractors=None):
+    #     """
+    #     Loads in an object which handles extracting tweet entities. Checks if a custom
+    #     extractor was passed in, if not sets the default TwitterDataProcessors.Extractors
+    #
+    #     Args:
+    #         extractors: TwitterDataProcessors.Extractors
+    #     """
+    #     if extractors is not None:
+    #         self.extractors = Extractors
+    #     else:
+    #         self.extractors = Extractors()
+
+    # def _check_extractors_set(self):
+    #     """
+    #     Checks whether extractor has been set, if not, sets to default
+    #     """
+    #     self.extractors = TweetDataProcessors.Extractors()
+    #     # if not self.extractors:
+    #     #     self.set_extractors()
+
+    def make_tweet(self, raw_tweet):
+        """
+        This is the main publically called method
+        """
+        self.tweet = Tweet()
+        self.tweet.set_tweetID(raw_tweet['id_str'])
+        uid = raw_tweet['user']['id_str']
+        self.tweet.set_userID(uid)
+        # self._check_extractors_set()
+        self._set_raw(raw_tweet)
+        self._process_hashtags()
+        self._process_user()
+        self._process_text()
+        return self.tweet
+
+    def _set_raw(self, tweet):
+        """
+        Sets the input to self.raw. Everything should operate off of self.raw
+        """
+        self.raw = tweet
+        self.tweet.set_raw_tweet(tweet)
+
+    def _make_tweet(self):
+        pass
+        # self.tweet.set_raw_tweet(self.raw)
+
+    def _process_hashtags(self):
+        # tags = self.extractors.extractHashtags(self.raw)
+        result = self.get_entities(self.raw)
+        tags = [self.format(r['text']) for r in result['hashtags']]
+        if len(tags) > 0:
+            self.tweet.set_hashtags(tags)
+
+    def _process_user(self):
+        self.tweet.set_user_info(self.raw['user'])
+
+    def _process_text(self):
+        self.tweet.set_text(self.raw['text'])
+
+
+class TagHelpers(Formatter):
+    """
+    This contains tools for working with hashtags.
+    It handles formatting hashtags as well as extracting them from the tweet
+    """
+    def __init__(self):
+        Formatter.__init__(self)
+
+    def format(self, tagText):
+        """
+        Make the appropriate transformations to the hashtag
+        """
+        try:
+            tag = self.HTMLEntitiesToUnicode(tagText)
+            # tag_d = tag.decode('utf-8')
+            # tag_d = str(tag_d)
+            tag = tag.lower()
+            return tag
+        except HashtagTextError(tagText):
+            pass
+            # finally:
+            # return tagText
+            # print "Tag formatting failed for tag text: %s \n %s" % (tagText, e)
+
+    def getHashtags(self, record):
+        """Extracts hashtags from the record
+
+        Args:
+            record: Dictionary with key 'entities' which holds a dictionary with the key 'hashtags'
+
+        Returns:
+            hashtags: List of hashtags present in the record
+        """
+        hashtags = []
+        for r in record['entities']['hashtags']:
+            hashtags.append(r['text'])
+        return hashtags
 
 
 class TagsFromSearch(object):

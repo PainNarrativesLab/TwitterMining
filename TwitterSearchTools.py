@@ -4,8 +4,8 @@ Formerly known as TwitterSearcher3.py
 """
 
 from time import sleep
-
 from ErrorClasses import *
+import TweetDataProcessors
 
 
 class Search:
@@ -17,11 +17,14 @@ class Search:
         _observers: A list of observer objects
         twitter_conn: Twitter connection
         redis: RedisTools.RedisService object
+        tweets: List that will contain TwitterDataProcessors.Tweet objects
     """
 
     def __init__(self):
         self.MAX_PAGES = 10
         self._observers = []
+        self.tweets = []
+        self.tweet_factory = TweetDataProcessors.TweetFactory()
 
     def attach_observer(self, observer):
         """
@@ -50,12 +53,13 @@ class Search:
             if modifier != observer:
                 observer.update(self)
 
-    def set_twitter_connection(self, login):
+    def set_twitter_connection(self, login, credentials):
         """
         Args:
+            credentials: String location of twitter credentials file
             login: TwitterLogin.login
         """
-        self.twitter_conn = login()
+        self.twitter_conn = login(credentials)
 
     def set_redis_service(self, RedisService):
         self.redis = RedisService
@@ -72,11 +76,12 @@ class Search:
         """
         self.couch = CouchService
 
-    def set_logger(self, Logger):
+    def set_logger(self, logger):
         """
-        Instance of Loggers.SearchLogger
+        Args:
+            logger Instance of Loggers.SearchLogger
         """
-        self.logger = Logger
+        self.logger = logger
 
     def run(self, list_of_search_terms, limit, recent=True, rest=800):
         """
@@ -93,29 +98,31 @@ class Search:
         # Query
         self.search_terms = list_of_search_terms
         self.recent = recent
-        self.tweets = []
-        self.limitTweet = 100001
-        #limitTweet = self._get_starting_tweet(recent)
-        self.logger.limit_tweet(self.limitTweet, recent)
+        # self.limitTweet = 100001
+        self.limitTweet = self._get_starting_tweet(recent)
 
         run_number = 0
         while run_number <= limit:
+            self.tweets = []
             self.logger.run_start(run_number)
+            self.logger.limit_tweet(self.limitTweet, self.recent)
             idx = 0
             # Run the search for each of the search terms
-            for s in self.search_terms:
-                hashtag = '#%s' % s
-                self.logger.search_term(s)
+            for term in self.search_terms:
+                hashtag = '#%s' % term
+                self.logger.search_term(term)
                 search_results = self._search_twitter(hashtag, recent)
-                # search_twitter returns a list of dicts (one for each page), so iterate through those to process and consolidate tweets
+                # search_twitter returns a list of dicts (one for each page),
+                # so iterate through those to process and consolidate tweets
                 if len(search_results) > 0:
                     newtweets = []
                     for results in search_results:
                         newtweets += self._process_search_results(results)
                     self.tweets += newtweets
-                    self.logger.number_of_results(s, len(newtweets))
+                    self.logger.number_of_results(term, len(newtweets))
                 else:
-                    self.logger.number_of_results(s, 0)
+                    self.logger.number_of_results(term, 0)
+            self.notify_observers()
             # Rest before another run through all the search terms
             if idx % 2 == 0:
                 self.logger.rest_start()
@@ -159,8 +166,8 @@ class Search:
         Raises:
             SearchError
         """
+        search_results = []
         try:
-            search_results = []
             # Iterate the search for the current hashtag up to the maximum number of pages
             for _ in range(self.MAX_PAGES - 1):  # Get more pages
                 if recent is False:  # search for older tweets
@@ -171,12 +178,13 @@ class Search:
                     result = self.twitter_conn.search.tweets(q=hashtag, count=100,
                                                              since_id=self.limitTweet)  # get most recent tweets
                     search_results.append(result)
-        except Exception as e:
-            raise SearchError(e, '_search_twitter')
+        except SearchError('_search_twitter') as e:
+            print e
         finally:
             return search_results
 
-    def _handle_id_field(self, tweet):
+    @staticmethod
+    def _handle_id_field(tweet):
         """
         Update the tweet's id field to id_str to ensure uniqueness
         """
@@ -192,20 +200,21 @@ class Search:
             search_results: Dictionary from twitter search with tweets stored in search_results['statuses']
 
         Returns:
-            List of tweet dictionaries. The list will be empty if there was an error
+            List of TwitterDataProcessors.Tweet objects. The list will be empty if there was an error
 
         Raises:
-
+            SearchError
         """
-
         tweets = []
         try:
             statuses = search_results['statuses']  # This is the list returned which contains all the tweets
             for tweet in statuses:
                 tweet = self._handle_id_field(tweet)
-                tweets.append(tweet)
-        except Exception as e:
-            raise SearchError(e, '_process_search_results')
+                tweetobj = self.tweet_factory.make_tweet(tweet)
+                tweets.append(tweetobj)
+        except SearchError('_process_search_results') as e:
+            print e
+            pass
         finally:
             return tweets
 

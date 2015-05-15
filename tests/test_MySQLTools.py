@@ -8,7 +8,7 @@ from numpy.testing.decorators import setastest
 
 from DaoMocks import *
 from TwitterProjectTestEntities import *
-from test_MySQLTools import *
+from MySQLTools import *
 from DatabaseAccessObjects.SqlCredentials import TestingCredentials
 from TweetDataProcessors import *
 
@@ -76,19 +76,36 @@ class HashtagServiceTest(unittest.TestCase):
         self.assertEqual(self.dao.log[0]['val'], [self.tweetid, self.tagid])
         self.assertEqual(self.dao.log[0]['command'], 'executeQuery')
 
+    def test_recordHashtags_new_tags(self):
+        tags = ['test0tag']
+        dao = DaoMock()
+        dao.set_response(None)
+        self.object.set_dao(dao)
+        self.object.recordHashtags(self.tweetid, tags)
+        self.assertEqual(len(dao.log), 4)
+        self.assertEqual(dao.log[0]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(dao.log[1]['query'], """INSERT INTO hashtags (hashtag) VALUES (%s)""")
+        self.assertEqual(dao.log[2]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
+        print dao.log
+
     def test_recordHashtags(self):
-        # tags = ['test0tag', 'test1tag']
-        #dao = DaoMock()
-        #dao.set_response({'tagID' : 123})
-        #self.object.recordHashtags(self.tweetid, tags)
-        #self.assertEqual(len(self.dao.log), 4)
-        pass
+        tags = ['test0tag']
+        dao = DaoMock()
+        dao.set_response({'tagID': 123})
+        self.object.set_dao(dao)
+        self.object.recordHashtags(self.tweetid, tags)
+        self.assertEqual(dao.log[0]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(self.dao.log[0]['val'], [tags[0]])
+        self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
+        self.assertEqual(self.dao.log[3]['val'], [self.tweetid, 123])
+        self.assertEqual(len(dao.log), 2)
+        print dao.log
 
 
 class UserServiceTest(unittest.TestCase):
     def setUp(self):
         self.object = UserService()
-
 
     def tearDown(self):
         pass
@@ -167,19 +184,18 @@ class UserServiceTest(unittest.TestCase):
         self.object.set_dao(dao)
         # Target method
         self.object.createUser(testdict)
-        #Assertions
+        # Assertions
         self.assertEqual(len(dao.log), 4)
-        #add user
+        # add user
         self.assertEqual(dao.log[0]['command'], 'executeQuery')
         self.assertEqual(dao.log[0]['query'], "INSERT INTO users (userID) VALUES (%s)")
         self.assertEqual(dao.log[0]['val'], [userid])
-        #check user
+        # check user
         self.assertEqual(dao.log[1]['command'], 'returnAll')
         self.assertEqual(dao.log[1]['query'], "SELECT userID FROM users WHERE userID = %s")
         self.assertEqual(dao.log[1]['val'], [userid])
         # update fields
         cnt = 0
-        print dao.log
         for x in dao.log[2:]:
             self.assertEqual(x['run_num'], cnt + 2)
             self.assertEqual(x['command'], 'executeQuery')

@@ -1,7 +1,7 @@
 from DatabaseAccessObjects.RedisDAOs import RedisDAO
 from TweetDataProcessors import Extractors
 from CouchDBTools import CouchService
-
+import DatabaseAccessObjects
 __author__ = 'ars62917'
 
 
@@ -111,9 +111,11 @@ class RedisService(RedisDAO):
 
     def get_max_id(self):
         try:
-            self.loadkeys()
-            mx = max(self.keys)
-            self.maxid = RedisFormat.tweet_id_remove(mx)
+            self.maxid = self.db.sort('tweetIDs', start=0, num=1, desc=True)
+            return self.maxid
+            # self.loadkeys()
+            # mx = max(self.keys)
+            # self.maxid = RedisFormat.tweet_id_remove(mx)
         except Exception as e:
             print "Error: %s " % e
 
@@ -179,6 +181,63 @@ class MaintainMasterTweetList(RedisDAO):
                 self.db.sadd(tid, tid)
         except Exception as e:
             print "error %s" % e
+
+
+class TweetIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
+    """
+    Args:
+        storage_set: String name of the set where tweet ids are stored
+        temp_queue: String name of the redis set to create to store tweets as they are processed
+    Attributes:
+        temp_queue_name: String name of the redis set to create
+        storage_set_name: String name of the set where tweet ids are stored
+    """
+    def __init__(self, host=None, port=6379, db=0, storage_set='tweetIDs', temp_queue='tweetqueue'):
+        self.temp_queue_name = temp_queue
+        self.storage_set_name = storage_set
+        if host is not None:
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, host=host, port=port, db=db)
+        elif db is not 0:
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, db)
+        else:
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, host='localhost', port=6379)
+
+    def make_queue(self):
+        """
+        Copies tweet id set into tweetqueue
+        Returns:
+            Number of tweetids copied
+        """
+        numtweets = self.db.sunionstore(self.temp_queue_name, self.storage_set_name)
+        return numtweets
+
+    def get_tweetid(self):
+        """
+        Pops a random tweet id off the queue and returns it
+        Returns:
+            String tweetid (e.g., '574310279153999872')
+        """
+        return self.db.spop(self.temp_queue_name)
+
+    def count_in_source(self):
+        """
+        Returns the number of tweetids in the source set
+        """
+        return self.db.scard(self.storage_set_name)
+
+    def count_in_queue(self):
+        """
+        Returns the number of tweetids in the queue
+        """
+        return self.db.scard(self.temp_queue_name)
+
+    def erase_queue(self):
+        """
+        Removes all values from the temporary queue
+        """
+        for x in self.db.smembers(self.temp_queue_name):
+            self.db.srem(self.temp_queue_name, x)
+
 
 if __name__ == '__main__':
     pass

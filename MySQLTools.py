@@ -22,6 +22,8 @@ class TwitterMySqlServiceParent(object):
         dao: TwitterSQLService.SQLService object which handles db interactions
         helper: TwitterDataProcessors.TagHelpers or TwitterDataProcessors.Formatter
     """
+    def __init__(self):
+        pass
 
     def set_dao(self, dao):
         """
@@ -59,11 +61,11 @@ class TweetService(TwitterMySqlServiceParent):
 
     def recordTweetData(self, tweetID, tweet):
         """
-        Records a tweet to the mysql db
+        Records a tweet text to the mysql db
         
         Args:
             tweetID: String tweetid ID of the tweet from the id_str field
-            tweet: tweet dictionary
+            tweet: TwitterDataProcessors.Tweet object
         
         Raises:
             TweetServiceError: Raised when there is an error processing the tweet text or inserting into the db
@@ -71,19 +73,25 @@ class TweetService(TwitterMySqlServiceParent):
         TODO: Rewrite to take a TwitterServiceClasses.Tweet object as input
         """
         try:
-            text = self.helper.HTMLEntitiesToUnicode(tweet['text'])
-            #            text = self.HTMLEntitiesToUnicode(tweet['text'])
-            self.dao.query = """INSERT INTO tweets (tweetID, tweetText, favorite_count, source, retweeted,
-            in_reply_to_screen_name, retweet_count, favorited, userID, lang, created_at)
-             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-            self.dao.val = [tweetID, text,
-                            tweet['favorite_count'], tweet['source'],
-                            tweet['retweeted'], tweet['in_reply_to_screen_name'],
-                            tweet['retweet_count'], tweet['favorited'],
-                            tweet['user']['id'], tweet['lang'], tweet['created_at']]
+            text = self.helper.HTMLEntitiesToUnicode(tweet.tweet_text)
+            self.dao.query = """INSERT IGNORE INTO tweets (tweetID, tweetText, userID, lang, created_at)
+             VALUES (%s, %s, %s, %s, %s)"""
+            self.dao.val = [tweetID, text, tweet.userID, tweet.raw_tweet['lang'], tweet.raw_tweet['created_at']]
+
+            #
+            # text = self.helper.HTMLEntitiesToUnicode(tweet.tweet_text)
+            # #            text = self.HTMLEntitiesToUnicode(tweet['text'])
+            # self.dao.query = """INSERT IGNORE INTO tweets (tweetID, tweetText, favorite_count, source, retweeted,
+            # in_reply_to_screen_name, retweet_count, favorited, userID, lang, created_at)
+            #  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            # self.dao.val = [tweetID, text,
+            #                 tweet.raw_tweet['favorite_count'], tweet.raw_tweet['source'],
+            #                 tweet.raw_tweet['retweeted'], tweet.raw_tweet['in_reply_to_screen_name'],
+            #                 tweet.raw_tweet['retweet_count'], tweet.raw_tweet['favorited'],
+            #                 tweet.raw_tweet['user']['id'], tweet.raw_tweet['lang'], tweet.raw_tweet['created_at']]
             self.dao.executeQuery()
-        except:
-            raise TweetServiceError(tweetID)
+        except TweetServiceError(tweetID):
+            pass
 
 
 class HashtagService(TwitterMySqlServiceParent):
@@ -113,10 +121,11 @@ class HashtagService(TwitterMySqlServiceParent):
             Returns a dictionary with key tagID containing the id string of the hashtag
         """
         tag = self.helper.format(tagText)
-        self.dao.query = """SELECT tagID FROM hashtags WHERE hashtag = %s"""
-        self.dao.val = [tag]
-        self.dao.returnOne()
-        return self.dao.results
+        if tag is not None:
+            self.dao.query = """SELECT tagID FROM hashtags WHERE hashtag = %s"""
+            self.dao.val = [tag]
+            self.dao.returnOne()
+            return self.dao.results
 
     def _recordTagText(self, tagText):
         """
@@ -126,9 +135,11 @@ class HashtagService(TwitterMySqlServiceParent):
             tagText: String of the hashtag to be recorded
         """
         tag = self.helper.format(tagText)
-        self.dao.query = """INSERT INTO hashtags (hashtag) VALUES (%s)"""
-        self.dao.val = [tag]
-        self.dao.executeQuery()
+        if tag is not None:
+            self.dao.query = """INSERT IGNORE INTO hashtags (hashtag) VALUES (%s)"""
+            self.dao.val = [tag]
+            self.dao.executeQuery()
+        # return self.dao.returnInsertID()
 
     def _recordTagAssoc(self, tweetID, tagID):
         """
@@ -153,18 +164,23 @@ class HashtagService(TwitterMySqlServiceParent):
         Raises:
             HashtagServiceError: Raised on error, contains tweetID
         """
+        assert not isinstance(tags, str)
         for tag in tags:
             try:
-                # Lookup tag id
+                self._recordTagText(tag)
                 tagID = self.getTagID(tag)
-                if tagID is None:
-                    # Insert the tag text into hashtags table
-                    self._recordTagText(tag)
-                    tagID = self.getTagID(tag)
-                if tagID is not None:  # Now have id. Make association
+                if tagID is not None:
                     self._recordTagAssoc(tweetID, tagID['tagID'])
-            except:
-                raise HashtagServiceError(tweetID)
+                # Lookup tag id
+                # tagID = self.getTagID(tag)
+                # if tagID is None:
+                #     # Insert the tag text into hashtags table
+                #     tagID = self._recordTagText(tag)
+                #     # tagID = self.getTagID(tag)
+                # if tagID is not None:  # Now have id. Make association
+                #     self._recordTagAssoc(tweetID, tagID['tagID'])
+            except HashtagServiceError(tweetID):
+                pass
 
 
 class UserService(TwitterMySqlServiceParent):

@@ -1,6 +1,7 @@
 from datetime import datetime
 from couchdb.design import ViewDefinition
 from DatabaseAccessObjects.CouchDBDAOs import CouchDAO
+import TweetDataProcessors
 
 __author__ = 'ars62917'
 
@@ -80,7 +81,7 @@ class CouchService(object):
         try:
             mapper = """function(doc){emit(doc.id_str, doc.id_str);}"""
             vw = ViewDefinition('index', name, mapper)
-            vw.sync(self.db)
+            vw.sync(self.dao)
         except Exception as e:
             print "Error making maxid view %s" % e
 
@@ -148,6 +149,26 @@ class CompileTweets:
                 except:
                     errors.append(row.value)
         print "%i tweets processed with %i errors" % (number_compiled, len(errors))
+
+
+class TweetRetriever(CouchDAO):
+    def __init__(self, db_name='compiled', server=None):
+        if server is not None:
+            CouchDAO.__init__(self, server=server)
+        else:
+            CouchDAO.__init__(self)
+        self.connect(db_name)
+        self.tweet_factory = TweetDataProcessors.TweetFactory()
+
+    def get_tweet(self, tweetID):
+        """
+        Queries couchdb for the tweetid and returns tweet object
+        Returns:
+            TweetDataProcessors.Tweet object with values all set
+        """
+        tweetraw = self.db[tweetID]
+        tweet = self.tweet_factory.make_tweet(tweetraw)
+        return tweet
 
 #
 # class CouchSaver:

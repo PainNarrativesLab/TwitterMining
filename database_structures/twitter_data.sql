@@ -20,15 +20,43 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
-# Dump of table hashtags
+# hashtags table
 # ------------------------------------------------------------
-
 CREATE TABLE `hashtags` (
   `tagID` bigint(30) unsigned NOT NULL AUTO_INCREMENT,
-  `hashtag` text NOT NULL,
-  PRIMARY KEY (`tagID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `hashtag` varchar(100) CHARACTER SET utf8 NOT NULL DEFAULT '',
+  PRIMARY KEY (`tagID`),
+  UNIQUE KEY `hashtag` (`hashtag`),
+  KEY `hashtag_2` (`hashtag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+# Dump of table users
+# ------------------------------------------------------------
+
+CREATE TABLE `users` (
+  `userID` bigint(30) unsigned NOT NULL,
+  `lang` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `utc_offset` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `verified` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `description` text CHARACTER SET utf8 DEFAULT NULL,
+  `friends_count` int(10) DEFAULT NULL,
+  `url` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `time_zone` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `created_at` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `name` text CHARACTER SET utf8 DEFAULT NULL,
+  `entities` text CHARACTER SET utf8 DEFAULT NULL,
+  `followers_count` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `screen_name` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `id_str` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `favourites_count` int(10) DEFAULT NULL,
+  `statuses_count` int(10) DEFAULT NULL,
+  `id` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `location` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
+  `profile_location` VARCHAR(100) CHARACTER SET utf8 DEFAULT NULL,
+  `is_translation_enabled` VARCHAR(100) CHARACTER SET utf8 DEFAULT NULL,
+  PRIMARY KEY (`userID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 # Dump of table tweets
@@ -51,7 +79,7 @@ CREATE TABLE `tweets` (
   PRIMARY KEY (`tweetID`),
   KEY `userID` (`userID`),
   CONSTRAINT `tweets_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 
@@ -66,33 +94,6 @@ CREATE TABLE `tweetsXtags` (
   CONSTRAINT `tweetsxtags_ibfk_2` FOREIGN KEY (`tweetID`) REFERENCES `tweets` (`tweetID`),
   CONSTRAINT `tweetsxtags_ibfk_3` FOREIGN KEY (`tagID`) REFERENCES `hashtags` (`tagID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-
-# Dump of table users
-# ------------------------------------------------------------
-
-CREATE TABLE `users` (
-  `userID` bigint(30) unsigned NOT NULL,
-  `lang` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `utc_offset` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `verified` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `description` text CHARACTER SET utf8,
-  `friends_count` int(10) DEFAULT NULL,
-  `url` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `time_zone` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `created_at` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `name` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `entities` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `followers_count` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `screen_name` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `id_str` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `favourites_count` int(10) DEFAULT NULL,
-  `statuses_count` int(10) DEFAULT NULL,
-  `id` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  `location` varchar(100) CHARACTER SET utf8 DEFAULT NULL,
-  PRIMARY KEY (`userID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 

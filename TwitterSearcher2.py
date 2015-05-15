@@ -80,8 +80,8 @@ class Search(CouchService, GraphBuilder):
     Does the searching
     """
 
-    def __init__(self):
-        self.twitter_conn = login()
+    def __init__(self, credentials_file):
+        self.twitter_conn = login(credentials_file)
         self.redis_service = RedisService()
         GraphBuilder.__init__(self)
         self.DB_NAME = 'compiled'

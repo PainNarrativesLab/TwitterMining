@@ -2,6 +2,8 @@
 This holds the exception handling and logging classes
 """
 
+import os
+
 from logbook import Logger
 
 
@@ -15,7 +17,9 @@ class LoggableError(Exception):
     """
 
     def __init__(self):
-        self.log_file = "application_errors.log"
+        self.orig_message = self.message
+        self.UPATH = os.getenv("HOME")
+        self.log_file = '%s/Desktop/tweetlog.rtf' % self.UPATH
         self.initialize_logger()
 
     def initialize_logger(self):
@@ -25,7 +29,7 @@ class LoggableError(Exception):
         except:
             self.logger = Logger()
             # self.logger = FileHandler(self.log_file)
-            #self.logger.push_application() #Pushes handler onto stack of log handlers
+            # self.logger.push_application() #Pushes handler onto stack of log handlers
 
     def log_error(self, error_message):
         self.logger.error(error_message)
@@ -38,7 +42,8 @@ class SearchError(LoggableError):
     """
     Errors in twitter searches
     """
-    def __init__(self, error, problem_method=''):
+
+    def __init__(self, problem_method=''):
         """
         Initializes log handler and creates message. Calls log
         Args:
@@ -47,19 +52,19 @@ class SearchError(LoggableError):
         """
         LoggableError.__init__(self)
         self.initialize_logger()
-        self.error_message = "Search error %s" % problem_method
-        self.logger.error(error)
+        self.error_message = "Search error with call to %s \n %s \n" % problem_method, self.orig_message
+        self.logger.error(self.error_message)
 
 
 class TweetError(LoggableError):
-    def __init__(self, tweetID):
+    def __init__(self, tweetID=None):
         """
         Initializes log handler and creates message. Does not log. That should be handled by child classes
         """
         LoggableError.__init__(self)
         self.initialize_logger()
         self.tweetID = tweetID
-        self.error_message = "%s went bad on tweetID %s" % (self.kind, self.tweetID)
+        self.error_message = "%s went bad on tweetID %s \n %s" % (self.kind, self.tweetID, self.orig_message)
 
     def __repr__(self):
         return self.error_message
@@ -76,6 +81,13 @@ class HashtagServiceError(TweetError):
     def __init__(self, tweetID):
         self.kind = 'HashtagService'
         TweetError.__init__(self, tweetID)
+        self.log_error(self.error_message)
+
+
+class HashtagTextError(TweetError):
+    def __init__(self, tagText):
+        self.kind = 'HashtagText: For text: %s ' % tagText
+        TweetError.__init__(self)
         self.log_error(self.error_message)
 
 
@@ -106,9 +118,11 @@ class SaverError(LoggableError):
         """
         Extracts the tweet id, if present, from the problematic object
         """
-        if 'tweetID' in tweet_object:
-            self.tweetID = tweetID
-        else:
+        try:
+            # if 'tweetID' in tweet_object:
+            self.tweetID = tweet_object.tweetID
+        # else:
+        except:
             self.tweetID = 'unspecified tweet id'
 
     def __repr__(self):
@@ -133,5 +147,5 @@ class ObserverError(LoggableError):
 
 
         # if __name__ == '__main__':
-        #    with log_handler.applicationbound():
+        # with log_handler.applicationbound():
         #        main()

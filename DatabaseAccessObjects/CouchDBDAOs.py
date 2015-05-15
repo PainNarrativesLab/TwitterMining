@@ -1,4 +1,5 @@
 import couchdb
+import Loggers
 
 
 class CouchDAO:
@@ -14,7 +15,9 @@ class CouchDAO:
     """
 
     def __init__(self, server='http://localhost:5984'):
+        self.db = None
         self.server = couchdb.Server(server)
+        # self.logger = Loggers.LoggableError()
 
     def connect(self, database_name):
         """
@@ -36,7 +39,7 @@ class CouchDAO:
         Returns:
             Boolean indicating whether connected
         """
-        if not self.db:
+        if self.db is None:
             print "No db connection. Please call CouchDAO.connect() first"
             return False
         else:
@@ -53,7 +56,8 @@ class CouchDAO:
             if self._check_connected():
                 self.db.save(document)
         except Exception as e:
-            print e
+            pass
+            # self.logger.log_warning()
 
     def query(self, query_string):
         """
@@ -67,7 +71,8 @@ class CouchDAO:
             if self._check_connected():
                 return self.db.query(query_string)
         except Exception as e:
-            print e
+            # print e
+            pass
 
     def get_view(self, view_name):
         """

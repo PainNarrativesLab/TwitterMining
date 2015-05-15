@@ -15,7 +15,6 @@ class SearchLoggerTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def test_set_log_file(self):
         testpath = '/users/test/test'
         self.object.set_log_file(testpath)

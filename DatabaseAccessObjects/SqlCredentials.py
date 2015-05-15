@@ -36,6 +36,8 @@ class Credentials(object):
         credentials = ET.parse(credentials_file)
         self.db_host = credentials.find('db_host').text
         self.db_port = credentials.find('db_port').text
+        if self.db_port is not None:
+            self.db_port = int(self.db_port)
         self.db_user = credentials.find('db_user').text
         self.db_name = credentials.find('db_name').text
         self.db_password = credentials.find('db_password').text
