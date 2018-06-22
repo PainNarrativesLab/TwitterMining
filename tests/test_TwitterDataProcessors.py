@@ -4,7 +4,7 @@ Unit tests for test_twitterdataprocessors
 import unittest
 
 from Mining.ProcessingTools.TweetDataProcessors import *
-from TwitterProjectTestEntities import *
+from tests.TwitterProjectTestEntities import *
 
 
 taglist = ('tag1', 'tag2', 'tag3', 'tag4')

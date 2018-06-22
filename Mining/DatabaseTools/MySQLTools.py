@@ -11,7 +11,7 @@ TODO: Better error handling.
 TODO: Maybe get all ids then transfer one by one
 """
 
-from ErrorClasses import *
+from Mining.Errors.ErrorClasses import *
 
 
 class TwitterMySqlServiceParent(object):

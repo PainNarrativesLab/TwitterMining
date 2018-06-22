@@ -6,11 +6,11 @@ import unittest
 
 from numpy.testing.decorators import setastest
 
-from DaoMocks import *
-from TwitterProjectTestEntities import *
-from MySQLTools import *
-from DatabaseAccessObjects.SqlCredentials import TestingCredentials
-from TweetDataProcessors import *
+from tests.DaoMocks import *
+from tests.TwitterProjectTestEntities import *
+from Mining.DatabaseTools.MySQLTools import *
+from Mining.DatabaseAccessObjects.SqlCredentials import TestingCredentials
+from Mining.ProcessingTools.TweetDataProcessors import *
 
 
 class TweetServiceTest(unittest.TestCase):

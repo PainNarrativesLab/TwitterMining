@@ -4,8 +4,8 @@ Formerly known as TwitterSearcher3.py
 """
 
 from time import sleep
-from ErrorClasses import *
-import TweetDataProcessors
+from Mining.Errors.ErrorClasses import *
+from Mining.ProcessingTools import TweetDataProcessors
 
 
 class Search:
