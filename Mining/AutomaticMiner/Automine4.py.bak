@@ -9,8 +9,8 @@ from CouchDBTools import *
 from RedisTools import *
 import TwitterSQLService
 from TweetDataProcessors import *
-from .TwitterSearchTools import *
-from .ObserverAndSubscribers import *
+from TwitterSearchTools import *
+from ObserverAndSubscribers import *
 from DatabaseAccessObjects import SqlCredentials
 from TwitterLogin import *
 

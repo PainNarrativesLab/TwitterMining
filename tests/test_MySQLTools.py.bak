@@ -87,7 +87,7 @@ class HashtagServiceTest(unittest.TestCase):
         self.assertEqual(dao.log[1]['query'], """INSERT INTO hashtags (hashtag) VALUES (%s)""")
         self.assertEqual(dao.log[2]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
         self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
-        print(dao.log)
+        print dao.log
 
     def test_recordHashtags(self):
         tags = ['test0tag']
@@ -100,7 +100,7 @@ class HashtagServiceTest(unittest.TestCase):
         self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
         self.assertEqual(self.dao.log[3]['val'], [self.tweetid, 123])
         self.assertEqual(len(dao.log), 2)
-        print(dao.log)
+        print dao.log
 
 
 class UserServiceTest(unittest.TestCase):

@@ -27,7 +27,7 @@ class CouchDAO:
         """
         try:
             self.db = self.server.create(database_name)
-        except couchdb.http.PreconditionFailed as e:
+        except couchdb.http.PreconditionFailed, e:
             self.db = self.server[database_name]
         return self.db
 
@@ -39,7 +39,7 @@ class CouchDAO:
             Boolean indicating whether connected
         """
         if self.db is None:
-            print("No db connection. Please call CouchDAO.connect() first")
+            print "No db connection. Please call CouchDAO.connect() first"
             return False
         else:
             return True

@@ -9,7 +9,7 @@ from MySQLTools import *
 import CouchDBTools
 from CouchDBTools import *
 import TwitterSQLService
-from .TweetDataProcessors import *
+from TweetDataProcessors import *
 from ObserverAndSubscribers import *
 from DatabaseAccessObjects import SqlCredentials
 import os
@@ -80,7 +80,7 @@ while True:
         tweets += 1
     except Exception as e:
         error_ids.append(tweetid)
-        print("Error %s" % e)
+        print "Error %s" % e
 
 # # Initialize couchdb handler and connect to server
 # couch_dao = CouchDAO(server='http://169.254.113.17:5984')
@@ -106,6 +106,6 @@ while True:
 ##    print e
 
 ##finally:
-print('%i tweets processed' % attempts)
-print('%i errors in processing tweets' % errors)
-print('%i tweets successfully processed' % tweets)
+print '%i tweets processed' % attempts
+print '%i errors in processing tweets' % errors
+print '%i tweets successfully processed' % tweets

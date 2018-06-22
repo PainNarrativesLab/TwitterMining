@@ -13,7 +13,7 @@
 #
 
 import pycurl
-from io import StringIO
+from StringIO import StringIO
 import json
 import DatabaseAccessObjects.RedisDAOs
 class CouchIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
@@ -66,8 +66,8 @@ class CouchIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
                     break
             
         except Exception as e:
-            print("Error: %s" % e)
-        print("%s tweets recorded" % self.recorded)
+            print "Error: %s" % e
+        print "%s tweets recorded" % self.recorded
    
     
     def check_for_greater_than_starting(self):
@@ -90,8 +90,8 @@ class CouchIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
                 if self.minid > self.upper_limit:
                     break
         except Exception as e:
-            print("Error: %s" % e)
-        print("%s tweets recorded" % self.recorded)
+            print "Error: %s" % e
+        print "%s tweets recorded" % self.recorded
             
     def _search(self, startid, stopid):
         """

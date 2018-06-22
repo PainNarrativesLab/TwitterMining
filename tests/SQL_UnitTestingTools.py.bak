@@ -88,7 +88,7 @@ class TestingDao(object):
             self.cursor.execute(self.query, self.val)
             self.cnt = self.conn.total_changes
         except Exception as e:
-            print("Query failed: %s" % e)
+            print "Query failed: %s" % e
 
     def returnOne(self):
         """
@@ -100,7 +100,7 @@ class TestingDao(object):
             self.cursor.execute(self.query % self.val)
             self.results = self.conn.fetchone()
         except Exception as e:
-            print("Query failed: %s " % e)
+            print "Query failed: %s " % e
 
     # raise
 
@@ -114,7 +114,7 @@ class TestingDao(object):
             self.conn.execute(self.query, self.val)
             self.results = self.cursor.fetchall()
         except Exception as e:
-            print("Query failed: %s " % e)
+            print "Query failed: %s " % e
             raise
 
     def returnInsertID(self):
@@ -124,7 +124,7 @@ class TestingDao(object):
         try:
             return self.cursor.lastrowid
         except Exception as e:
-            print("Error getting insert id %s " % e)
+            print "Error getting insert id %s " % e
 
 # class MyTestCase(unittest.TestCase):
 #     def setUp(self):

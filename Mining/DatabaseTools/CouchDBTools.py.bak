@@ -37,7 +37,7 @@ class CouchService(object):
                     self.max_id = i.value
             self.newest = self.max_id
         except Exception as e:
-            print("No newest loaded %s" % e)
+            print "No newest loaded %s" % e
 
     def get_oldest_id(self):
         try:
@@ -46,7 +46,7 @@ class CouchService(object):
                 self.min_id = i.value
             self.oldest = self.min_id
         except Exception as e:
-            print("No oldest loaded %s" % e)
+            print "No oldest loaded %s" % e
 
     def get_tweetids(self):
         """
@@ -62,7 +62,7 @@ class CouchService(object):
                 self.tweetids.append(i.value)
             return self.tweetids
         except Exception as e:
-            print("Error loading ids %s" % e)
+            print "Error loading ids %s" % e
 
     def get_tweet_texts(self):
         """
@@ -83,7 +83,7 @@ class CouchService(object):
             vw = ViewDefinition('index', name, mapper)
             vw.sync(self.dao)
         except Exception as e:
-            print("Error making maxid view %s" % e)
+            print "Error making maxid view %s" % e
 
     def make_tweet_views(self):
         """
@@ -130,7 +130,7 @@ class CompileTweets:
             db_service = CouchService()
             db_service.set_dataservice(db_dao)
             # texts = []
-            print(datetime.now(), "Compiling: %s" % (db))
+            print datetime.now(), "Compiling: %s" % (db)
             for row in db_service.dao.get_view('indexpy/get_tweets'):
                 #                       for row in cdb.db.query("""function(doc){emit (null, doc);}"""):
                 #       texts.append(row.value)
@@ -148,7 +148,7 @@ class CompileTweets:
                         number_compiled += 1
                 except:
                     errors.append(row.value)
-        print("%i tweets processed with %i errors" % (number_compiled, len(errors)))
+        print "%i tweets processed with %i errors" % (number_compiled, len(errors))
 
 
 class TweetRetriever(CouchDAO):

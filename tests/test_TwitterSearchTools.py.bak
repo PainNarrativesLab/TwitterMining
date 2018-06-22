@@ -28,9 +28,9 @@ class SearchTest(unittest.TestCase):
     def test_detach_observer(self):
         # TODO check with multiple observers that correct one removed
         self.object._observers.append(self.observer)
-        self.assertEqual(len(self.object._observers), 1)
+        self.assertEquals(len(self.object._observers), 1)
         self.object.detach_observer(self.observer)
-        self.assertEqual(len(self.object._observers), 0)
+        self.assertEquals(len(self.object._observers), 0)
 
     def test_detach_observer_exception(self):
         self.object._observers.append({'kind': 'housecat'})
@@ -45,19 +45,19 @@ class SearchTest(unittest.TestCase):
         # test
         self.object.notify_observers()
         self.assertTrue(self.observer.update_called)
-        self.assertEqual(self.observer.caller, self.object)
+        self.assertEquals(self.observer.caller, self.object)
 
     def test_set_redis_service(self):
         self.object.set_redis_service(self.redis)
-        self.assertEqual(self.object.redis, self.redis)
+        self.assertEquals(self.object.redis, self.redis)
 
     def test_set_couch_service(self):
         self.object.set_couch_service(self.couch)
-        self.assertEqual(self.object.couch, self.couch)
+        self.assertEquals(self.object.couch, self.couch)
 
     def test_set_logger(self):
         self.object.set_logger(self.logger)
-        self.assertEqual(self.object.logger, self.logger)
+        self.assertEquals(self.object.logger, self.logger)
 
     def test_set_twitter_connection(self):
         self.object.set_twitter_connection(login)
@@ -121,7 +121,7 @@ class SearchTest(unittest.TestCase):
         goodtweet = {'id_str': good, '_id': good}
         search_results = {'crap': ['sltuff'], 'statuses': [tweet1, tweet2]}
         result = self.object._process_search_results(search_results)
-        self.assertEqual(result, [goodtweet, goodtweet])
+        self.assertEquals(result, [goodtweet, goodtweet])
 
     # def test__process_search_results_exception(self):
     #     search_results = {'taco': 78}

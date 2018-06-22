@@ -29,7 +29,7 @@ class GraphBuilder:
             self.graph = nx.read_gexf(self.graphFile)
             # print 'Start graph info', nx.info(self.graph)
         except Exception as e:
-            print('Error loading graph from %s: %s' % (self.graphFile, e))
+            print 'Error loading graph from %s: %s' % (self.graphFile, e)
             # Prevent further execution
             sys.exit()
 
@@ -54,7 +54,7 @@ class GraphBuilder:
                     #Add tag to the graph. Done here so that one bad edge won't bring everything down
                     self.graph.add_edges_from(tweet_tuples)
                 except Exception as e:
-                    print('Error adding edge for tweet id %s and hashtag %s. Details: %s' % (tweetid, tag_cleaned, e))
+                    print 'Error adding edge for tweet id %s and hashtag %s. Details: %s' % (tweetid, tag_cleaned, e)
                 #todo Add redis log of non recorded hashtags
             finally:  # record added edges
                 nx.write_gexf(self.graph, self.graphFile)
@@ -68,7 +68,7 @@ class GraphBuilder:
             for tweet in tweetlist:
                 self.from_single_tweet(tweet)
         except Exception as e:
-            print('Error saving tweetlist %s' % e)
+            print 'Error saving tweetlist %s' % e
 
 
 class Search(CouchService, GraphBuilder):
@@ -85,7 +85,7 @@ class Search(CouchService, GraphBuilder):
         try:
             CouchService.__init__(self, self.DB_NAME)
         except Exception as e:
-            print('Problem connecting to couchdb database: %s', e)
+            print 'Problem connecting to couchdb database: %s', e
 
     def run(self, list_of_search_terms, limit, recent='True', rest=800):
         """
@@ -107,21 +107,21 @@ class Search(CouchService, GraphBuilder):
 
         run_number = 0
         while run_number <= limit:
-            print('------------------------------------------------------------------')
+            print '------------------------------------------------------------------'
 
-            print(datetime.now())
-            print("Run number: %d" % run_number)
+            print datetime.now()
+            print "Run number: %d" % run_number
             idx = 0
             #Get tweetid to start from or to stop at. This is done here so that will only happen once per loop through search terms
             if self.recent == 'False':
-                print('Searching for older tweets....')
+                print 'Searching for older tweets....'
                 self.get_oldest_id()  #@todo Replace with redis search
                 self.limitTweet = self.oldest
             elif self.recent == 'True':
-                print('Getting newer tweets....')
+                print 'Getting newer tweets....'
                 self.redis_service.get_max_id()
                 self.limitTweet = self.redis_service.maxid
-                print('Newest stored tweet %s' % self.limitTweet)
+                print 'Newest stored tweet %s' % self.limitTweet
             #Run the search for each of the search terms
             for s in self.search_terms:
                 hashtag = '#%s' % s
@@ -129,8 +129,8 @@ class Search(CouchService, GraphBuilder):
 
             #Rest before another run through all the search terms
             if idx % 2 == 0:
-                print('resting')
-                print(datetime.now())
+                print 'resting'
+                print datetime.now()
                 sleep(rest)
             idx += 1
             run_number += 1
@@ -141,7 +141,7 @@ class Search(CouchService, GraphBuilder):
         @param hashtag Properly formatted string to search for
         @type hashtag String
         """
-        print('Looking up %s' % hashtag)
+        print 'Looking up %s' % hashtag
         try:
             ##Iterate the search for the current hashtag up to the maximum number of pages
             for _ in range(self.MAX_PAGES - 1):  # Get more pages
@@ -156,7 +156,7 @@ class Search(CouchService, GraphBuilder):
                     if len(search_results) > 0:
                         self.process_search_results(search_results)
         except Exception as e:
-            print('Error in twitter searching: %s' % e)
+            print 'Error in twitter searching: %s' % e
 
     def process_search_results(self, search_results):
         """
@@ -185,14 +185,14 @@ class Search(CouchService, GraphBuilder):
                                 ##self.build_from_single_tweet(tweet)
                                 stored += 1
                             except Exception as e:
-                                print('Error saving tweetid %s to graph: %s' % (tweetid, e))
+                                print 'Error saving tweetid %s to graph: %s' % (tweetid, e)
                         except Exception as e:
-                            print('Error storing tweetid %s in redis: %s ' % (tweetid, e))
+                            print 'Error storing tweetid %s in redis: %s ' % (tweetid, e)
                     except Exception as e:
                         pass
                     #print 'Error storing tweetid: %s in couchdb: %s' % (tweetid, e)
                 except Exception as e:
-                    print('Error with loop on tweet: %s' % e)
+                    print 'Error with loop on tweet: %s' % e
 
 
 """

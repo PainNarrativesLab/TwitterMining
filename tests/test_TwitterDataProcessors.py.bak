@@ -33,7 +33,7 @@ class TagHelpersTest(unittest.TestCase):
         expected = ('allupper', 'mixedcasetag')
         for i in range(0, len(testtags)):
             result = self.object.format(testtags[i])
-            print(result)
+            print result
             self.assertEqual(result, expected[i])
 
     def test_getHashtags(self):
@@ -123,7 +123,7 @@ class TagsTest(unittest.TestCase):
 
     def test_getPairs(self):
         self.result = Tags.getPairs(taglist)
-        print(self.result)
+        print self.result
         for p in self.result:
             self.assertIn(p, expected_pairs)
         for p in expected_pairs:

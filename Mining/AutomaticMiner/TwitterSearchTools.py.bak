@@ -179,7 +179,7 @@ class Search:
                                                              since_id=self.limitTweet)  # get most recent tweets
                     search_results.append(result)
         except SearchError('_search_twitter') as e:
-            print(e)
+            print e
         finally:
             return search_results
 
@@ -213,7 +213,7 @@ class Search:
                 tweetobj = self.tweet_factory.make_tweet(tweet)
                 tweets.append(tweetobj)
         except SearchError('_process_search_results') as e:
-            print(e)
+            print e
             pass
         finally:
             return tweets

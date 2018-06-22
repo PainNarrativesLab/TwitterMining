@@ -32,7 +32,7 @@ class HashtagServiceTest(unittest.TestCase):
         # Make fixture
         for t in self.testags:
             query = """INSERT INTO hashtags (tagID, hashtag) VALUES ('%s', '%s')""" % (t['tagid'], t['formattedtext'])
-            print(query)
+            print query
             self.dao.cursor.execute(query)
             self.dao.conn.commit()
 

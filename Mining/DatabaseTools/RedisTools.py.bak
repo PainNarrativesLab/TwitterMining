@@ -1,6 +1,6 @@
 from DatabaseAccessObjects.RedisDAOs import RedisDAO
 from TweetDataProcessors import Extractors
-from .CouchDBTools import CouchService
+from CouchDBTools import CouchService
 import DatabaseAccessObjects
 __author__ = 'ars62917'
 
@@ -21,7 +21,7 @@ class RedisService(RedisDAO):
         try:
             self.keys = self.db.keys('*')
         except Exception as e:
-            print('failed to load keys %s' % e)
+            print 'failed to load keys %s' % e
 
     def tag_remove_redis_format(self, redisified_tag):
         junk, sep, tag = redisified_tag.partition(':')
@@ -53,14 +53,14 @@ class RedisService(RedisDAO):
 
         for record_id in self.CS.ids:
             if record_id != '_design/index' and record_id != '_design/indexpy':
-                print(record_id)
+                print record_id
                 tid = 'hashtags:tweet_id:%s' % self.CS.db[record_id]['id_str']
                 ht = Extractors.getEntities(self.CS.db[record_id])
                 for h in ht['hashtags']:
                     if len(h) >= 1:
                         t = str(h['text']).lower()
                         tag = 'tag:%s' % t
-                        print(tid, tag)
+                        print tid, tag
                         self.db.sadd(tid, tag)
 
     def redis_result_list_fixer(self, redis_result_list):
@@ -94,7 +94,7 @@ class RedisService(RedisDAO):
             tid = 'unique_tweets:tweet_id:%s' % tweetid
             self.db.sadd(tid, tid)
         except Exception as e:
-            print("error %s" % e)
+            print "error %s" % e
 
     def save_tweet_id(self, tweetid):
         """
@@ -107,7 +107,7 @@ class RedisService(RedisDAO):
             #tid = 'unique_tweets:tweet_id:%s' % tweetid
             self.db.sadd(self.setname, tweetid)
         except Exception as e:
-            print("error %s" % e)
+            print "error %s" % e
 
     def get_max_id(self):
         try:
@@ -117,7 +117,7 @@ class RedisService(RedisDAO):
             # mx = max(self.keys)
             # self.maxid = RedisFormat.tweet_id_remove(mx)
         except Exception as e:
-            print("Error: %s " % e)
+            print "Error: %s " % e
 
     def save_graph_storage_error(self, tweetid, errormessage):
         """
@@ -133,7 +133,7 @@ class RedisService(RedisDAO):
         try:
             self.db.sadd(self.grapherror_name, tweetid)
         except Exception as e:
-            print('Error storing graph error : %s' % e)
+            print 'Error storing graph error : %s' % e
 
 
 class RedisFormat:
@@ -177,10 +177,10 @@ class MaintainMasterTweetList(RedisDAO):
         try:
             for i in self.ids:
                 tid = 'unique_tweets:tweet_id:%s' % i
-                print(tid)
+                print tid
                 self.db.sadd(tid, tid)
         except Exception as e:
-            print("error %s" % e)
+            print "error %s" % e
 
 
 class TweetIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):

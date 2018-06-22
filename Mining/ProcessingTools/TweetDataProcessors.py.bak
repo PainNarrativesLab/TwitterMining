@@ -44,7 +44,7 @@ class Tweet(object):
         self.tweet_text = tweet_text
 
     def set_user_info(self, user_dict):
-        for k in list(user_dict.keys()):
+        for k in user_dict.keys():
             self.user[k] = user_dict[k]
 
 
@@ -65,10 +65,10 @@ class Formatter(object):
             String converted to unicode
         """
         try:
-            text = str(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
+            text = unicode(BeautifulStoneSoup(text, convertEntities=BeautifulStoneSoup.ALL_ENTITIES))
             return text
         except Exception as e:
-            print("error formatting string: %s ; Errors:  %s" % text, e)
+            print "error formatting string: %s ; Errors:  %s" % text, e
             return None
 
     def format(self, text):
@@ -80,7 +80,7 @@ class Formatter(object):
             # txt = str(txt)
             return txt
         except Exception as e:
-            print("error formatting string: %s ; Errors:  %s" % text, e)
+            print "error formatting string: %s ; Errors:  %s" % text, e
             return None
 
 
@@ -137,7 +137,7 @@ class Extractors(object):
                 all_tags_from_search.append(record)
                 return all_tags_from_search
         except Exception as e:
-            print('Error in hashtag extraction %s' % e)
+            print 'Error in hashtag extraction %s' % e
 
 
 class TweetFactory(Formatter, Extractors):

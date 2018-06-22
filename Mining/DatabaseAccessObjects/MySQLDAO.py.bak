@@ -67,7 +67,7 @@ class BaseDAO:
             self.dbc = self.db.cursor()
             self.status = 'Connected to: %s' % credentials.database()
         except MySQLdb.Error as e:
-            print(("Connection error : %s" % e))
+            print ("Connection error : %s" % e)
             raise
 
     def executeQuery(self):
@@ -80,7 +80,7 @@ class BaseDAO:
             self.dbc.execute(self.query, self.val)
             self.cnt = self.dbc.rowcount
         except MySQLdb.Error as e:
-            print(("Query failed: %s" % e))
+            print ("Query failed: %s" % e)
 
     def returnOne(self):
         """
@@ -92,8 +92,8 @@ class BaseDAO:
             self.dbc.execute(self.query, self.val)
             self.results = self.dbc.fetchone()
 
-        except MySQLdb.Error as e:
-            print(("Query failed: %s " % e))
+        except MySQLdb.Error, e:
+            print ("Query failed: %s " % e)
 
     # raise
 
@@ -107,7 +107,7 @@ class BaseDAO:
             self.dbc.execute(self.query, self.val)
             self.results = self.dbc.fetchall()
         except MySQLdb.Error as e:
-            print(("Query failed: %s " % e))
+            print ("Query failed: %s " % e)
             raise
 
     def checkValName(self):
@@ -121,7 +121,7 @@ class BaseDAO:
                 if valsLength == 0:
                     self.val = self.vals
             except Exception:
-                print("No value set")
+                print "No value set"
 
     def returnInsertID(self):
         """
@@ -130,4 +130,4 @@ class BaseDAO:
         try:
             return self.db.insert_id()
         except MySQLdb.Error as e:
-            print("Error getting insert id %s " % e)
+            print "Error getting insert id %s " % e

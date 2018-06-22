@@ -22,13 +22,13 @@ try:
     RS.get_all_tags()
     RS.remove_redis_format_from_stored_tags()
     cr = len(RS.clean_results)
-    print("%d tags cleaned and returned" % cr)
+    print "%d tags cleaned and returned" % cr
     TFS = TagsFromSearch()
     pairs, alltags = TFS.getPairs(RS.clean_results)
-    print("%d pairs identified" % len(pairs))
-    print("%d total tags" % len(alltags))
+    print "%d pairs identified" % len(pairs)
+    print "%d total tags" % len(alltags)
 except Exception as e:
-    print(e)
+    print e
 
 finally:
     # save pairs

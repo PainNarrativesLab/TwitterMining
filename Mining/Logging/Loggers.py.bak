@@ -51,7 +51,7 @@ class SearchLogger(LogWriter):
         self.log += '\n --------------------------------- %s --------------------------- ' % datetime.now()
         self.log += "\n Run number: %d " % run_number
         self.write_to_file()
-        print(self.log)
+        print self.log
 
     def limit_tweet(self, limitTweet, recent):
         if recent is True:

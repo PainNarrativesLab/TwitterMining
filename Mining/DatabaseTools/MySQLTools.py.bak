@@ -212,7 +212,7 @@ class UserService(TwitterMySqlServiceParent):
                               'follow_request_sent']
 
     def _filter_userDict(self, userDict):
-        to_use = [x for x in list(userDict.keys()) if x not in self.ignorecolumns]
+        to_use = [x for x in userDict.keys() if x not in self.ignorecolumns]
         return to_use
 
     def check_user(self, userID):

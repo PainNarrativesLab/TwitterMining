@@ -5,7 +5,7 @@ test_tweet = {
     "_id": "401352093598253056",
     "_rev": "2-64861d45d1696f848786975706ad3bf9",
     "truncated": 'false',
-    "text": "I might have vulvodynia. Reminds me of Charlotte #satc #sexology #vulvodynia @ Ganzenplein http://t.co/C1E4pgiu2T",
+    "text": u"I might have vulvodynia. Reminds me of Charlotte #satc #sexology #vulvodynia @ Ganzenplein http://t.co/C1E4pgiu2T",
     "in_reply_to_status_id": 'null',
     "id": 401352093598253060,
     "favorite_count": 0,
