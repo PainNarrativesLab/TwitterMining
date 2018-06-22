@@ -4,15 +4,15 @@ Not yet ready
 
 from Mining.Logging.Loggers import SearchLogger
 
-from DatabaseTools.MySQLTools import *
-from DatabaseTools.CouchDBTools import *
-from DatabaseTools.RedisTools import *
-from Mining.DatabaseTools import TwitterSQLService
-from Mining.ProcessingTools.TweetDataProcessors import *
-from Mining.AutomaticMiner.TwitterSearchTools import *
-from Mining.AutomaticMiner.ObserverAndSubscribers import *
-from Mining.DatabaseAccessObjects import SqlCredentials
-from Mining.AccessManagement.TwitterLogin import *
+from MySQLTools import *
+from CouchDBTools import *
+from RedisTools import *
+import TwitterSQLService
+from TweetDataProcessors import *
+from TwitterSearchTools import *
+from ObserverAndSubscribers import *
+from DatabaseAccessObjects import SqlCredentials
+from TwitterLogin import *
 
 # Better way to find home
 import os
@@ -66,7 +66,7 @@ RedisSaver.set_dao(RedisService)
 # Initialize mysql handler classes
 credentials = SqlCredentials.Credentials()
 credentials.load_credentials(SQL_CREDENTIALS)
-mysql_dao = TwitterSQLService.SQLService( credentials )
+mysql_dao = TwitterSQLService.SQLService(credentials)
 # Initialize services for mysql
 TweetService = TweetService()
 TweetService.set_helper(TagHelpers)

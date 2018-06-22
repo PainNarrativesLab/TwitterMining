@@ -8,9 +8,9 @@ from SQL_UnitTestingTools import *
 
 #from DaoMocks import *
 from TwitterProjectTestEntities import *
-from DatabaseTools.MySQLTools import *
-from Mining.DatabaseAccessObjects import TestingCredentials
-from Mining.ProcessingTools.TweetDataProcessors import *
+from MySQLTools import *
+from DatabaseAccessObjects.SqlCredentials import TestingCredentials
+from TweetDataProcessors import *
 
 
 class HashtagServiceTest(unittest.TestCase):
@@ -49,13 +49,13 @@ class HashtagServiceTest(unittest.TestCase):
         # def test__recordTagText(self):
         #     self.object.taghelper = TagHelpers()
         #     self.object._recordTagText(self.tagtext)
-        #     self.assertEqual(self.dao.log[0]['word_map_table_creation_query'], "INSERT INTO hashtags (hashtag) VALUES (%s)")
+        #     self.assertEqual(self.dao.log[0]['query'], "INSERT INTO hashtags (hashtag) VALUES (%s)")
         #     self.assertEqual(self.dao.log[0]['val'], [self.tagtext.lower()])
         #     self.assertEqual(self.dao.log[0]['command'], 'executeQuery')
 
         # def test__recordTagAssoc(self):
             # self.object._recordTagAssoc(self.tweetid, self.tagid)
-            # self.assertEqual(self.dao.log[0]['word_map_table_creation_query'], "INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)")
+            # self.assertEqual(self.dao.log[0]['query'], "INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)")
             # self.assertEqual(self.dao.log[0]['val'], [self.tweetid, self.tagid])
             # self.assertEqual(self.dao.log[0]['command'], 'executeQuery')
 

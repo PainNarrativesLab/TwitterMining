@@ -28,7 +28,7 @@ class LoggableError(Exception):
                 pass
         except:
             self.logger = Logger()
-            # self.logger = FileHandler(self.CLIENT_SEND_LOG_FILE)
+            # self.logger = FileHandler(self.log_file)
             # self.logger.push_application() #Pushes handler onto stack of log handlers
 
     def log_error(self, error_message):

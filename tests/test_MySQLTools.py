@@ -8,9 +8,9 @@ from numpy.testing.decorators import setastest
 
 from DaoMocks import *
 from TwitterProjectTestEntities import *
-from DatabaseTools.MySQLTools import *
-from Mining.DatabaseAccessObjects import TestingCredentials
-from Mining.ProcessingTools.TweetDataProcessors import *
+from MySQLTools import *
+from DatabaseAccessObjects.SqlCredentials import TestingCredentials
+from TweetDataProcessors import *
 
 
 class TweetServiceTest(unittest.TestCase):
@@ -59,20 +59,20 @@ class HashtagServiceTest(unittest.TestCase):
     def test_getTagID(self):
         self.object.taghelper = TagHelpers()
         result = self.object.getTagID(self.tagtext)
-        self.assertEqual(self.dao.log[0]['word_map_table_creation_query'], "SELECT tagID FROM hashtags WHERE hashtag = %s")
+        self.assertEqual(self.dao.log[0]['query'], "SELECT tagID FROM hashtags WHERE hashtag = %s")
         self.assertEqual(self.dao.log[0]['val'], [self.formatted_tagtext])
         self.assertEqual(self.dao.log[0]['command'], 'returnOne')
 
     def test__recordTagText(self):
         self.object.taghelper = TagHelpers()
         self.object._recordTagText(self.tagtext)
-        self.assertEqual(self.dao.log[0]['word_map_table_creation_query'], "INSERT INTO hashtags (hashtag) VALUES (%s)")
+        self.assertEqual(self.dao.log[0]['query'], "INSERT INTO hashtags (hashtag) VALUES (%s)")
         self.assertEqual(self.dao.log[0]['val'], [self.tagtext.lower()])
         self.assertEqual(self.dao.log[0]['command'], 'executeQuery')
 
     def test__recordTagAssoc(self):
         self.object._recordTagAssoc(self.tweetid, self.tagid)
-        self.assertEqual(self.dao.log[0]['word_map_table_creation_query'], "INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)")
+        self.assertEqual(self.dao.log[0]['query'], "INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)")
         self.assertEqual(self.dao.log[0]['val'], [self.tweetid, self.tagid])
         self.assertEqual(self.dao.log[0]['command'], 'executeQuery')
 
@@ -83,10 +83,10 @@ class HashtagServiceTest(unittest.TestCase):
         self.object.set_dao(dao)
         self.object.recordHashtags(self.tweetid, tags)
         self.assertEqual(len(dao.log), 4)
-        self.assertEqual(dao.log[0]['word_map_table_creation_query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
-        self.assertEqual(dao.log[1]['word_map_table_creation_query'], """INSERT INTO hashtags (hashtag) VALUES (%s)""")
-        self.assertEqual(dao.log[2]['word_map_table_creation_query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
-        self.assertEqual(dao.log[3]['word_map_table_creation_query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
+        self.assertEqual(dao.log[0]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(dao.log[1]['query'], """INSERT INTO hashtags (hashtag) VALUES (%s)""")
+        self.assertEqual(dao.log[2]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
         print dao.log
 
     def test_recordHashtags(self):
@@ -95,9 +95,9 @@ class HashtagServiceTest(unittest.TestCase):
         dao.set_response({'tagID': 123})
         self.object.set_dao(dao)
         self.object.recordHashtags(self.tweetid, tags)
-        self.assertEqual(dao.log[0]['word_map_table_creation_query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
+        self.assertEqual(dao.log[0]['query'], """SELECT tagID FROM hashtags WHERE hashtag = %s""")
         self.assertEqual(self.dao.log[0]['val'], [tags[0]])
-        self.assertEqual(dao.log[3]['word_map_table_creation_query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
+        self.assertEqual(dao.log[3]['query'], """INSERT IGNORE INTO tweetsXtags (tweetID, tagID) VALUES (%s, %s)""")
         self.assertEqual(self.dao.log[3]['val'], [self.tweetid, 123])
         self.assertEqual(len(dao.log), 2)
         print dao.log
@@ -170,7 +170,7 @@ class UserServiceTest(unittest.TestCase):
         self.assertEqual(len(dao.log), 2)
         for x in dao.log:
             self.assertEqual(x['command'], 'executeQuery')
-            self.assertEqual(x['word_map_table_creation_query'], "UPDATE users SET test%s = %%s WHERE userID = %%s" % x['run_num'])
+            self.assertEqual(x['query'], "UPDATE users SET test%s = %%s WHERE userID = %%s" % x['run_num'])
             self.assertEqual(x['val'], ["test%sval" % x['run_num'], userid])
 
     def test_createUser(self):
@@ -188,18 +188,18 @@ class UserServiceTest(unittest.TestCase):
         self.assertEqual(len(dao.log), 4)
         # add user
         self.assertEqual(dao.log[0]['command'], 'executeQuery')
-        self.assertEqual(dao.log[0]['word_map_table_creation_query'], "INSERT INTO users (userID) VALUES (%s)")
+        self.assertEqual(dao.log[0]['query'], "INSERT INTO users (userID) VALUES (%s)")
         self.assertEqual(dao.log[0]['val'], [userid])
         # check user
         self.assertEqual(dao.log[1]['command'], 'returnAll')
-        self.assertEqual(dao.log[1]['word_map_table_creation_query'], "SELECT userID FROM users WHERE userID = %s")
+        self.assertEqual(dao.log[1]['query'], "SELECT userID FROM users WHERE userID = %s")
         self.assertEqual(dao.log[1]['val'], [userid])
         # update fields
         cnt = 0
         for x in dao.log[2:]:
             self.assertEqual(x['run_num'], cnt + 2)
             self.assertEqual(x['command'], 'executeQuery')
-            self.assertTrue(x['word_map_table_creation_query'] in goodqueries)  #field updates might not be in same order
+            self.assertTrue(x['query'] in goodqueries)  #field updates might not be in same order
             self.assertEqual(x['val'][1], userid)
             self.assertTrue(x['val'][0] in goodtestvals)
             cnt += 1

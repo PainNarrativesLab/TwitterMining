@@ -5,12 +5,17 @@ the main mysql database
 __author__ = 'ars62917'
 
 #from Loggers import SearchLogger
-from DatabaseTools.MySQLTools import *
-from DatabaseTools import CouchDBTools, RedisTools
-from Mining.DatabaseTools import TwitterSQLService
-from Mining.ProcessingTools.TweetDataProcessors import *
-from Mining.DatabaseAccessObjects import SqlCredentials
+from MySQLTools import *
+import CouchDBTools
+from CouchDBTools import *
+import TwitterSQLService
+from TweetDataProcessors import *
+from ObserverAndSubscribers import *
+from DatabaseAccessObjects import SqlCredentials
 import os
+import RedisTools
+
+
 
 UPATH = os.getenv("HOME")
 BASE = UPATH + '/Dropbox/PainNarrativesLab'
@@ -30,7 +35,7 @@ tag_helper = TagHelpers()
 # Initialize mysql handler classes
 credentials = SqlCredentials.Credentials()
 credentials.load_credentials(SQL_CREDENTIALS)
-mysql_dao = TwitterSQLService.SQLService( credentials )
+mysql_dao = TwitterSQLService.SQLService(credentials)
 
 # Initialize services for mysql
 TweetService = TweetService()
@@ -57,7 +62,7 @@ attempts = 0
 error_ids = []
 #minerip = 169.254.203.246
 
-tig = RedisTools.TweetIdGetter( storage_set='novelids' )
+tig = RedisTools.TweetIdGetter(storage_set='novelids')
 tweet_retriever = CouchDBTools.TweetRetriever()
 #numtweets = tig.make_queue()
 #print "%s tweetids to process" % numtweets
@@ -81,7 +86,7 @@ while True:
 # couch_dao = CouchDAO(server='http://169.254.113.17:5984')
 # couch_dao.connect(DB_NAME)
 # # Get result set
-# result = couch_dao.word_map_table_creation_query("""function(doc){emit (doc.id, doc);}""")
+# result = couch_dao.query("""function(doc){emit (doc.id, doc);}""")
 
 ##errors = 0
 ##tweets = 0

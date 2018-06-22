@@ -17,7 +17,7 @@ class LogWriter(object):
                 pass
         except:
             self.logger = Logger()
-            # self.logger = FileHandler(self.CLIENT_SEND_LOG_FILE)
+            # self.logger = FileHandler(self.log_file)
             # self.logger.push_application() #Pushes handler onto stack of log handlers
 
     def set_log_file(self, file_to_write):
@@ -39,8 +39,8 @@ class SearchLogger(LogWriter):
         LogWriter.__init__(self)
         self.log_file = log_file
         # self.UPATH = os.getenv("HOME")
-        # self.CLIENT_SEND_LOG_FILE = '%s/Desktop/%s' % self.UPATH, CLIENT_SEND_LOG_FILE
-        # self.CLIENT_SEND_LOG_FILE = "application_search.log"
+        # self.log_file = '%s/Desktop/%s' % self.UPATH, log_file
+        # self.log_file = "application_search.log"
         self.set_log_file(self.log_file)
 
     def write_to_file(self):

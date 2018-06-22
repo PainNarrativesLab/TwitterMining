@@ -1,7 +1,7 @@
-from Mining.DatabaseAccessObjects.RedisDAOs import RedisDAO
-from Mining.ProcessingTools.TweetDataProcessors import Extractors
-from DatabaseTools.CouchDBTools import CouchService
-
+from DatabaseAccessObjects.RedisDAOs import RedisDAO
+from TweetDataProcessors import Extractors
+from CouchDBTools import CouchService
+import DatabaseAccessObjects
 __author__ = 'ars62917'
 
 
@@ -183,7 +183,7 @@ class MaintainMasterTweetList(RedisDAO):
             print "error %s" % e
 
 
-class TweetIdGetter( Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO ):
+class TweetIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
     """
     Args:
         storage_set: String name of the set where tweet ids are stored
@@ -196,11 +196,11 @@ class TweetIdGetter( Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO ):
         self.temp_queue_name = temp_queue
         self.storage_set_name = storage_set
         if host is not None:
-            Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__( self, host=host, port=port, db=db )
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, host=host, port=port, db=db)
         elif db is not 0:
-            Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__( self, db )
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, db)
         else:
-            Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__( self, host='localhost', port=6379 )
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, host='localhost', port=6379)
 
     def make_queue(self):
         """

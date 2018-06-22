@@ -1,7 +1,7 @@
 from datetime import datetime
 from couchdb.design import ViewDefinition
-from Mining.DatabaseAccessObjects import CouchDAO
-from Mining.ProcessingTools import TweetDataProcessors
+from DatabaseAccessObjects.CouchDBDAOs import CouchDAO
+import TweetDataProcessors
 
 __author__ = 'ars62917'
 
@@ -132,7 +132,7 @@ class CompileTweets:
             # texts = []
             print datetime.now(), "Compiling: %s" % (db)
             for row in db_service.dao.get_view('indexpy/get_tweets'):
-                #                       for row in cdb.db.word_map_table_creation_query("""function(doc){emit (null, doc);}"""):
+                #                       for row in cdb.db.query("""function(doc){emit (null, doc);}"""):
                 #       texts.append(row.value)
                 try:
                     # for t in row.value:

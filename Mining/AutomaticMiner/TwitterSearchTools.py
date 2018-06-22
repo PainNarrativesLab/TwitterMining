@@ -4,8 +4,8 @@ Formerly known as TwitterSearcher3.py
 """
 
 from time import sleep
-from Mining.Errors.ErrorClasses import *
-from Mining.ProcessingTools import TweetDataProcessors
+from ErrorClasses import *
+import TweetDataProcessors
 
 
 class Search:
@@ -87,10 +87,10 @@ class Search:
         """
         Performs the search. This version internalizes the timeout functions so that it only grabs the newest tweet once per search term list
 
-        TODO Revise so that the only checks the starting tweet id once per group of word_map_table_creation_query terms
+        TODO Revise so that the only checks the starting tweet id once per group of query terms
         
         Args:
-            list_of_search_terms: A list of the terms for the word_map_table_creation_query to send to twitter
+            list_of_search_terms: A list of the terms for the query to send to twitter
             limit: Integer representing the maximum number of times to run the search loop
             recent: Boolean True search for tweets newer than most recent record; False search for tweets older than oldest record
             rest: Integer of the time to rest in between searches
@@ -221,7 +221,7 @@ class Search:
 
 """
 def newsearch:
-self.search_results = self.twitter_conn.search.tweets(q=self.word_map_table_creation_query, count=100)
+self.search_results = self.twitter_conn.search.tweets(q=self.query, count=100)
 """
 
 if __name__ == '__main__':

@@ -15,8 +15,8 @@
 import pycurl
 from StringIO import StringIO
 import json
-import Mining.DatabaseAccessObjects.RedisDAOs
-class CouchIdGetter( Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO ):
+import DatabaseAccessObjects.RedisDAOs
+class CouchIdGetter(DatabaseAccessObjects.RedisDAOs.RedisDAO):
     """
     This pulls all doc ids from couch to find ones missing from tweetids in redis
     Attributes:
@@ -30,9 +30,9 @@ class CouchIdGetter( Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO ):
     def __init__(self, dbname='n-search-crps', db=0, start=4021982852191600065):
         self.storage_set_name = 'couchdbtweetIDs'
         if db is not 0:
-            Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__( self, db )
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self, db)
         else:
-            Mining.DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__( self )
+            DatabaseAccessObjects.RedisDAOs.RedisDAO.__init__(self)
         self.minerip = 'localhost:5984'
         #self.minerip = '169.254.203.246:5984'
         self.dbname = dbname

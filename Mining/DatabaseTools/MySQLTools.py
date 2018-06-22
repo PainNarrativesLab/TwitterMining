@@ -11,7 +11,7 @@ TODO: Better error handling.
 TODO: Maybe get all ids then transfer one by one
 """
 
-from Mining.Errors.ErrorClasses import *
+from ErrorClasses import *
 
 
 class TwitterMySqlServiceParent(object):
@@ -81,7 +81,7 @@ class TweetService(TwitterMySqlServiceParent):
             #
             # text = self.helper.HTMLEntitiesToUnicode(tweet.tweet_text)
             # #            text = self.HTMLEntitiesToUnicode(tweet['text'])
-            # self.dao.word_map_table_creation_query = """INSERT IGNORE INTO tweets (tweetID, tweetText, favorite_count, source, retweeted,
+            # self.dao.query = """INSERT IGNORE INTO tweets (tweetID, tweetText, favorite_count, source, retweeted,
             # in_reply_to_screen_name, retweet_count, favorited, userID, lang, created_at)
             #  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             # self.dao.val = [tweetID, text,

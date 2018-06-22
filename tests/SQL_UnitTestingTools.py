@@ -80,7 +80,7 @@ class TestingDao(object):
 
     def executeQuery(self):
         """
-        Prepares and executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the variables in self.val
+        Prepares and executes the query stored in self.query with the variables in self.val
         Usually used for insert, update, and other functions which don't require a return
         """
         try:
@@ -92,7 +92,7 @@ class TestingDao(object):
 
     def returnOne(self):
         """
-        Executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the vals in self.val.
+        Executes the query stored in self.query with the vals in self.val.
         Returns the first row in an array called self.results
         """
         try:
@@ -106,7 +106,7 @@ class TestingDao(object):
 
     def returnAll(self):
         """
-        Executes the word_map_table_creation_query stored in self.word_map_table_creation_query with the vals in self.val.
+        Executes the query stored in self.query with the vals in self.val.
         Return the results in an array called self.results
         """
         try:
@@ -132,11 +132,11 @@ class TestingDao(object):
 #         self.dao.make_tables()
 #
 #     def test_something(self):
-#         self.dao.word_map_table_creation_query = """INSERT INTO hashtags (hashtag) VALUES ('testtag')"""
+#         self.dao.query = """INSERT INTO hashtags (hashtag) VALUES ('testtag')"""
 #         self.dao.val = []
 #         self.dao.executeQuery()
 #         insertid = self.dao.returnInsertID();
-#         #self.dao.word_map_table_creation_query = """
+#         #self.dao.query = """
 #         #self.dao.returnAll()
 #         print insertid
 #         # self.assertTrue(insertid, 0)
