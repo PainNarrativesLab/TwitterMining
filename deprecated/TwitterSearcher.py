@@ -108,11 +108,11 @@ class Search(CouchService, GraphBuilder):
     def quickrun(self, query_string, recent='True'):
         """
         Performs the search.
-        @param query_string The query to send to twitter
+        @param query_string The word_map_table_creation_query to send to twitter
         @type query_string string
         @param recent 'True' search for tweets newer than most recent record; 'False' search for tweets older than oldest record
         @type recent string
-        @todo Revise so that the only checks the starting tweet id once per group of query terms
+        @todo Revise so that the only checks the starting tweet id once per group of word_map_table_creation_query terms
         """
         # Query
         self.query = query_string
@@ -140,7 +140,7 @@ class Search(CouchService, GraphBuilder):
                         print 'Newest stored tweet %s' % self.redis_service.maxid
                         self.search_results = self.twitter_conn.search.tweets(q=self.query, count=100,
                                                                               since_id=self.redis_service.maxid)  #get most recent tweets
-                        #self.search_results = self.twitter_conn.search.tweets(q=self.query, count=100, since_id=self.newest)  #get most recent tweets
+                        #self.search_results = self.twitter_conn.search.tweets(q=self.word_map_table_creation_query, count=100, since_id=self.newest)  #get most recent tweets
                 except Exception as e:  # If there are no results in the db already
                     print 'none in db %s' % e
                     self.search_results = self.twitter_conn.search.tweets(q=self.query, count=100)
@@ -170,7 +170,7 @@ class Search(CouchService, GraphBuilder):
             print 'error %s' % e
 
         finally:
-            #If the query loop finishes or if it hits an error, record the results in couchdb
+            #If the word_map_table_creation_query loop finishes or if it hits an error, record the results in couchdb
             for t in self.tweets:
                 try:
                     t['_id'] = t['id_str']
@@ -192,7 +192,7 @@ class Search(CouchService, GraphBuilder):
     def execute(self, query_string, recent='True'):
         """
         Performs the search.
-        @param query_string The query to send to twitter
+        @param query_string The word_map_table_creation_query to send to twitter
         @type query_string string
         @param recent 'True' search for tweets newer than most recent record; 'False' search for tweets older than oldest record
         @type recent string
@@ -248,7 +248,7 @@ class Search(CouchService, GraphBuilder):
             print 'error %s' % e
 
         finally:
-            #If the query loop finishes or if it hits an error, record the results in couchdb
+            #If the word_map_table_creation_query loop finishes or if it hits an error, record the results in couchdb
             for t in self.tweets:
                 try:
                     t['_id'] = t['id_str']

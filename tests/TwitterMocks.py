@@ -7,7 +7,7 @@ class search:
         pass
 
     def tweets(self, q, count, since_id=None, max_id=None):
-        result = {'query': q, 'count': count, 'since_id': since_id, 'max_id': max_id}
+        result = {'word_map_table_creation_query': q, 'count': count, 'since_id': since_id, 'max_id': max_id}
         print result
         return result
 

@@ -1,7 +1,5 @@
-from nose.tools import *
-
-from Loggers import SearchLogger
-from TwitterSearchTools import *
+from Mining.Logging.Loggers import SearchLogger
+from Mining.AutomaticMiner.TwitterSearchTools import *
 from DaoMocks import *
 from TwitterMocks import *
 from ObserverMocks import *
@@ -111,9 +109,9 @@ class SearchTest(unittest.TestCase):
         self.object.set_twitter_connection(login)
         self.object.limitTweet = limittweet
         result = self.object._search_twitter(tag, True)
-        self.assertEqual(result[0], {'query': tag, 'count': 100, 'since_id': limittweet, 'max_id': None})
+        self.assertEqual(result[0], {'word_map_table_creation_query': tag, 'count': 100, 'since_id': limittweet, 'max_id': None})
         result = self.object._search_twitter(tag, False)
-        self.assertEqual(result[0], {'query': tag, 'count': 100, 'since_id': None, 'max_id': limittweet})
+        self.assertEqual(result[0], {'word_map_table_creation_query': tag, 'count': 100, 'since_id': None, 'max_id': limittweet})
 
     def test__process_search_results(self):
         bad = 12234

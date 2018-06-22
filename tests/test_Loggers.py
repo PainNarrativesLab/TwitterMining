@@ -1,7 +1,6 @@
 import unittest
 
-from ObserverAndSubscribers import *
-from Loggers import *
+from Mining.Logging.Loggers import *
 
 
 class SearchLoggerTest(unittest.TestCase):
@@ -14,7 +13,6 @@ class SearchLoggerTest(unittest.TestCase):
 
     def tearDown(self):
         pass
-
 
     def test_set_log_file(self):
         testpath = '/users/test/test'

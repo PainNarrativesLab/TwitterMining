@@ -9,7 +9,7 @@ class DaoMock:
         self.log = []
 
     def log_query(self, command):
-        self.log.append({'run_num': self.runcount, 'query': self.query, 'val': self.val, 'command': command})
+        self.log.append({'run_num': self.runcount, 'word_map_table_creation_query': self.query, 'val': self.val, 'command': command})
         self.runcount += 1
 
     def set_response(self, response):
@@ -17,7 +17,7 @@ class DaoMock:
 
     def returnAll(self):
         self.log_query('returnAll')
-        if (self.response != None):
+        if self.response is not None:
             self.result = self.response
             self.results = self.response
         else:
@@ -27,7 +27,7 @@ class DaoMock:
 
     def executeQuery(self):
         self.log_query('executeQuery')
-        if (self.response != None):
+        if self.response is not None:
             self.result = self.response
             self.results = self.response
         else:
@@ -37,7 +37,7 @@ class DaoMock:
 
     def returnOne(self):
         self.log_query('returnOne')
-        if (self.response != None):
+        if self.response is not None:
             self.result = self.response
             self.results = self.response
         else:

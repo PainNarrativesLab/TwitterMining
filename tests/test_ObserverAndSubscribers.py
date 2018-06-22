@@ -1,6 +1,6 @@
 import unittest
 
-from ObserverAndSubscribers import *
+from Mining.AutomaticMiner.ObserverAndSubscribers import *
 from collections import deque
 
 class SearchMock:
@@ -11,7 +11,7 @@ class SearchMock:
         """
         This attaches an observer object which has an update method to be called when there are new tweets to be stored
         """
-        if not observer in self._observers:
+        if observer not in self._observers:
             self._observers.append(observer)
 
     def detach_observer(self, observer):
@@ -157,6 +157,7 @@ class SearchObserverTest(unittest.TestCase):
 class RedisSaverTest(unittest.TestCase):
     def setUp(self):
         self.object = RedisSaver()
+        self.testtweets = [{'id_str': '10001'}, {'id_str': '10002'}, {'id_str': '10003'}]
 
     def tearDown(self):
         self.object = ''

@@ -1,6 +1,6 @@
 __author__ = 'adam'
 
-from ObserverAndSubscribers import ISearchObserver
+from Mining.AutomaticMiner.ObserverAndSubscribers import ISearchObserver
 
 
 class ISearchObserverMock(ISearchObserver):
